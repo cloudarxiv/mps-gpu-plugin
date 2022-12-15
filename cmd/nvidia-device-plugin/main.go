@@ -216,7 +216,7 @@ func startPlugins(c *cli.Context, flags []cli.Flag, restarting bool) ([]*NvidiaD
 	if err != nil {
 		return nil, false, fmt.Errorf("unable to load config: %v", err)
 	}
-	disableResourceRenamingInConfig(config)
+	//disableResourceRenamingInConfig(config)
 
 	// Update the configuration file with default resources.
 	log.Println("Updating config with default resource matching patterns.")
