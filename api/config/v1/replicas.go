@@ -206,6 +206,10 @@ func (s *ReplicatedResource) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
+	if s.Replicas < 2 {
+		return fmt.Errorf("number of replicas must be >= 2")
+	}
+
 	rename, exists := rr["rename"]
 	if !exists {
 		return nil
