@@ -153,3 +153,8 @@ PHONY: .shell
 		-w $(PWD) \
 		--user $$(id -u):$$(id -g) \
 		$(BUILDIMAGE)
+
+
+PHONY: build-mps-server
+build-mps-server:
+	$(DOCKER) build -t ghcr.io/telemaco019/mps-server:latest -f deployments/mps-server/Dockerfile deployments/mps-server
