@@ -155,6 +155,41 @@ PHONY: .shell
 		$(BUILDIMAGE)
 
 
-PHONY: build-mps-server
-build-mps-server:
-	$(DOCKER) build -t ghcr.io/telemaco019/mps-server:latest -f deployments/mps-server/Dockerfile deployments/mps-server
+### Nebuly targets ###
+
+
+## Versions
+PLUGIN_VERSION ?= 0.13.0
+MPS_SERVER_VERSION ?= 0.0.1
+
+# Docker image names
+PLUGIN_DOCKER_IMAGE_NAME ?= k8s-device-plugin
+MPS_SERVER_DOCKER_IMAGE_NAME ?= nvidia-mps-server
+
+# Helm chart URL to push Helm charts
+HELM_CHART_REGISTRY ?= oci://ghcr.io/telemaco019/helm-charts
+# Docker registry
+DOCKER_REGISTRY ?= ghcr.io/nebuly-ai
+
+
+.PHONY: neb-docker-build-plugin
+neb-docker-build-plugin:
+	$(DOCKER) build -t ${DOCKER_REGISTRY}/${PLUGIN_DOCKER_IMAGE_NAME}:${PLUGIN_VERSION} -f deployments/container/Dockerfile.ubuntu .
+
+.PHONY: neb-docker-build-mps-server
+neb-docker-build-mps-server:
+	$(DOCKER) build -t ${DOCKER_REGISTRY}/${MPS_SERVER_DOCKER_IMAGE_NAME}:${MPS_SERVER_VERSION} -f deployments/mps-server/Dockerfile deployments/mps-server
+
+.PHONY: neb-docker-push-plugin
+neb-docker-push-plugin:
+	$(DOCKER) push ${DOCKER_REGISTRY}/${PLUGIN_DOCKER_IMAGE_NAME}:${PLUGIN_VERSION}
+
+.PHONY: neb-docker-push-mps-server
+neb-docker-push-mps-server:
+	$(DOCKER) push ${DOCKER_REGISTRY}/${MPS_SERVER_DOCKER_IMAGE_NAME}:${MPS_SERVER_VERSION}
+
+.PHONY: neb-docker-build
+neb-docker-build: neb-docker-build-plugin neb-docker-build-mps-server
+
+.PHONY: neb-docker-push
+neb-docker-push: neb-docker-push-plugin neb-docker-push-mps-server

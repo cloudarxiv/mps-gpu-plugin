@@ -1,0 +1,62 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      pluginVersion:
+        type: text
+        description: The version of the k8s-device-plugin to build
+        default: latest
+      mpsServerVersion:
+        type: text
+        description: The version of the MPS server to build
+        default: latest
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+          cache: true
+
+      - name: Set up Helm
+        uses: Azure/setup-helm@v3
+        with:
+          version: v3.10.3
+
+      - name: Helm login
+        run: echo ${{ secrets.GITHUB_TOKEN }} | helm registry login ${{ env.REGISTRY }} -u $ --password-stdin
+
+      - name: Login to GitHub container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+#      - name: Run tests
+#        run: make test
+
+      - name: Build Docker images
+        run: make neb-docker-build
+        env:
+          PLUGIN_VERSION: ${{ github.event.inputs.pluginVersion }}
+          MPS_SERVER_VERSION: ${{ github.event.inputs.mpsServerVersion }}
+
+      - name: Push Docker images
+        run: make neb-docker-push
+        env:
+          PLUGIN_VERSION: ${{ github.event.inputs.pluginVersion }}
+          MPS_SERVER_VERSION: ${{ github.event.inputs.mpsServerVersion }}

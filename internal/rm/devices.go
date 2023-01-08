@@ -216,6 +216,10 @@ func (r AnnotatedID) GetID() string {
 	return id
 }
 
+func (r AnnotatedID) String() string {
+	return string(r)
+}
+
 // AnyHasAnnotations checks if any ID has annotations or not.
 func (rs AnnotatedIDs) AnyHasAnnotations() bool {
 	for _, r := range rs {

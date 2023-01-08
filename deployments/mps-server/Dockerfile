@@ -16,4 +16,4 @@ COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 USER 1000
-ENTRYPOINT ["./entrypoint"]
+ENTRYPOINT ["./entrypoint.sh"]

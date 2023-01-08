@@ -25,6 +25,21 @@ import (
 	"github.com/google/uuid"
 )
 
+// MPS defines the set of GPU replicas (e.g. slices) backed by MPS
+type MPS struct {
+	FailRequestsGreaterThanOne bool          `json:"failRequestsGreaterThanOne,omitempty" yaml:"failRequestsGreaterThanOne,omitempty"`
+	Resources                  []MPSResource `json:"resources,omitempty"                  yaml:"resources,omitempty"`
+}
+
+// MPSResource represents a resource to be replicated (e.g. sliced) through MPS
+type MPSResource struct {
+	Name     ResourceName          `json:"name" yaml:"name"`
+	Rename   ResourceName          `json:"rename,omitempty" yaml:"rename,omitempty"`
+	MemoryGB int                   `json:"memoryGB" yaml:"memoryGB"`
+	Replicas int                   `json:"replicas" yaml:"replicas"`
+	Devices  []ReplicatedDeviceRef `json:"devices" yaml:"devices,flow"`
+}
+
 // TimeSlicing defines the set of replicas to be made for timeSlicing available resources.
 type TimeSlicing struct {
 	RenameByDefault            bool                 `json:"renameByDefault,omitempty"            yaml:"renameByDefault,omitempty"`
@@ -90,8 +105,8 @@ func (d ReplicatedDeviceRef) IsGpuUUID() bool {
 
 // IsMigUUID checks if a ReplicatedDeviceRef is a MIG UUID
 // A MIG UUID can be of one of two forms:
-//    - MIG-b1028956-cfa2-0990-bf4a-5da9abb51763
-//    - MIG-GPU-b1028956-cfa2-0990-bf4a-5da9abb51763/3/0
+//   - MIG-b1028956-cfa2-0990-bf4a-5da9abb51763
+//   - MIG-GPU-b1028956-cfa2-0990-bf4a-5da9abb51763/3/0
 func (d ReplicatedDeviceRef) IsMigUUID() bool {
 	if !strings.HasPrefix(string(d), "MIG-") {
 		return false
@@ -115,6 +130,10 @@ func (d ReplicatedDeviceRef) IsMigUUID() bool {
 		}
 	}
 	return true
+}
+
+func (d ReplicatedDeviceRef) String() string {
+	return string(d)
 }
 
 // UnmarshalJSON unmarshals raw bytes into a 'TimeSlicing' struct.

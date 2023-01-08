@@ -51,6 +51,13 @@ func (b *deviceMapBuilder) build() (DeviceMap, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error updating device map with replicas from config.sharing.timeSlicing.resources: %v", err)
 	}
+
+	// Add MPS replicas only if TimeSlicing sharing is not enabled
+	if b.config.Sharing.TimeSlicing.Resources != nil {
+		return devices, nil
+	}
+	devices, err = addMPSReplicas(b.config, devices)
+
 	return devices, nil
 }
 
@@ -313,4 +320,71 @@ func updateDeviceMapWithReplicas(config *spec.Config, oDevices DeviceMap) (Devic
 	}
 
 	return devices, nil
+}
+
+func addMPSReplicas(config *spec.Config, deviceMap DeviceMap) (DeviceMap, error) {
+	result := make(DeviceMap)
+
+	// Begin by walking config.Sharing.MPS.Resources and building a map of just the resource names.
+	names := make(map[spec.ResourceName]bool)
+	for _, r := range config.Sharing.MPS.Resources {
+		names[r.Name] = true
+	}
+
+	// Copy over all devices from deviceMap without a resource reference in MPS.Resources.
+	for r, ds := range deviceMap {
+		if !names[r] {
+			result[r] = ds
+		}
+	}
+
+	for _, r := range config.Sharing.MPS.Resources {
+		// Get the IDs of the devices we want to replicate from deviceMap
+		ids := make([]string, 0)
+		devices := deviceMap[r.Name]
+		for _, ref := range r.Devices {
+			if ref.IsUUID() {
+				d := devices.GetByID(string(ref))
+				if d == nil {
+					return nil, fmt.Errorf("no matching device with UUID: %v", ref)
+				}
+				ids = append(ids, d.ID)
+			}
+			if ref.IsGPUIndex() {
+				d := devices.GetByIndex(string(ref))
+				if d == nil {
+					return nil, fmt.Errorf("no matching device at index: %v", ref)
+				}
+				ids = append(ids, d.ID)
+			}
+		}
+
+		// Add any devices we don't want replicated directly into the resulting device map.
+		for _, d := range deviceMap[r.Name].Difference(deviceMap[r.Name].Subset(ids)) {
+			result.insert(r.Name, d)
+		}
+
+		// Nothing to do
+		if len(ids) == 0 {
+			continue
+		}
+
+		// Rename resource exposed to k8s
+		name := r.Name
+		if r.Rename != "" {
+			name = r.Rename
+		}
+
+		// Add replicated devices with annotated IDs
+		for _, id := range ids {
+			for i := 0; i < r.Replicas; i++ {
+				annotatedID := NewAnnotatedID(id, i).String()
+				replicatedDevice := *(deviceMap[r.Name][id])
+				replicatedDevice.ID = annotatedID
+				result.insert(name, &replicatedDevice)
+			}
+		}
+	}
+
+	return result, nil
 }

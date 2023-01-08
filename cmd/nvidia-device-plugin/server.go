@@ -272,6 +272,14 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 
 		ids := req.DevicesIDs
 		deviceIDs := plugin.deviceIDsFromAnnotatedDeviceIDs(ids)
+		mpsDevices := plugin.getMPSDevices()
+		requestedMPSDevices := mpsDevices.Subset(deviceIDs)
+
+		// If the devices being allocated are replicas, then (conditionally)
+		// error out if more than one resource is being allocated.
+		if plugin.config.Sharing.MPS.FailRequestsGreaterThanOne && len(requestedMPSDevices) > 1 {
+			return nil, fmt.Errorf("request for '%v: %v' too large: maximum request size for shared resources is 1", plugin.rm.Resource(), len(req.DevicesIDs))
+		}
 
 		if *plugin.config.Flags.Plugin.DeviceListStrategy == spec.DeviceListStrategyEnvvar {
 			response.Envs = plugin.apiEnvs(plugin.deviceListEnvvar, deviceIDs)
@@ -290,6 +298,30 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 			response.Envs["NVIDIA_MOFED"] = "enabled"
 		}
 
+		if len(requestedMPSDevices) == 0 {
+			responses.ContainerResponses = append(responses.ContainerResponses, &response)
+			continue
+		}
+
+		// Configure MPS devices
+		log.Printf("configuring requested MPS devices: %+v", requestedMPSDevices) // todo: remove me
+		if response.Mounts == nil {
+			response.Mounts = make([]*pluginapi.Mount, 0)
+		}
+		if response.Envs == nil {
+			response.Envs = make(map[string]string)
+		}
+		memLimits := make([]string, 0)
+		for _, mpsDevice := range requestedMPSDevices {
+			memLimits = append(memLimits, fmt.Sprintf("%s:%dG", mpsDevice.Index, mpsDevice.MemoryGB))
+		}
+		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimits, ",")
+		response.Envs["CUDA_MPS_PIPE_DIRECTORY"] = "/tmp/nvidia-mps"
+		mount := pluginapi.Mount{
+			ContainerPath: "/tmp/nvidia-mps",
+			HostPath:      "/tmp/nvidia-mps",
+		}
+		response.Mounts = append(response.Mounts, &mount)
 		responses.ContainerResponses = append(responses.ContainerResponses, &response)
 	}
 
@@ -350,6 +382,42 @@ func (plugin *NvidiaDevicePlugin) apiMounts(deviceIDs []string) []*pluginapi.Mou
 	}
 
 	return mounts
+}
+
+func (plugin *NvidiaDevicePlugin) getMPSDevices() MPSDeviceList {
+	var res = make(MPSDeviceList, 0)
+	if plugin.config.Sharing.MPS.Resources == nil {
+		return res
+	}
+
+	for _, r := range plugin.config.Sharing.MPS.Resources {
+		for _, ref := range r.Devices {
+			if ref.IsGPUIndex() {
+				device := plugin.rm.Devices().GetByIndex(ref.String())
+				if device != nil {
+					mpsDevice := MPSDevice{
+						MemoryGB: r.MemoryGB,
+						DeviceID: rm.AnnotatedID(device.ID).GetID(),
+						Index:    device.Index,
+					}
+					res = append(res, mpsDevice)
+				}
+			}
+			if ref.IsUUID() {
+				device := plugin.rm.Devices().GetByID(rm.AnnotatedID(ref.String()).String())
+				if device != nil {
+					mpsDevice := MPSDevice{
+						MemoryGB: r.MemoryGB,
+						DeviceID: ref.String(),
+						Index:    device.Index,
+					}
+					res = append(res, mpsDevice)
+				}
+			}
+		}
+	}
+
+	return res
 }
 
 func (plugin *NvidiaDevicePlugin) apiDeviceSpecs(driverRoot string, ids []string) []*pluginapi.DeviceSpec {

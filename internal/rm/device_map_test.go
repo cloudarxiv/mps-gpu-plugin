@@ -106,3 +106,127 @@ func TestDeviceMapInsert(t *testing.T) {
 		})
 	}
 }
+
+func TestAddMPSReplicas(t *testing.T) {
+	testCases := []struct {
+		description       string
+		config            *spec.Config
+		deviceMap         DeviceMap
+		expectedDeviceMap DeviceMap
+		expectedErr       bool
+	}{
+		{
+			description:       "DeviceMap is empty",
+			config:            &spec.Config{},
+			deviceMap:         make(DeviceMap),
+			expectedDeviceMap: make(DeviceMap),
+			expectedErr:       false,
+		},
+		{
+			description: "Config has no MPS devices, should not add replicas",
+			config:      &spec.Config{},
+			deviceMap: map[spec.ResourceName]Devices{
+				"nvidia.com/gpu": {
+					"0": &Device{
+						Device: pluginapi.Device{ID: "id-0"},
+						Paths:  []string{},
+						Index:  "0",
+					},
+					"1": &Device{
+						Device: pluginapi.Device{ID: "id-1"},
+						Paths:  []string{},
+						Index:  "1",
+					},
+				},
+			},
+			expectedDeviceMap: map[spec.ResourceName]Devices{
+				"nvidia.com/gpu": {
+					"0": &Device{
+						Device: pluginapi.Device{ID: "id-0"},
+						Paths:  []string{},
+						Index:  "0",
+					},
+					"1": &Device{
+						Device: pluginapi.Device{ID: "id-1"},
+						Paths:  []string{},
+						Index:  "1",
+					},
+				},
+			},
+			expectedErr: false,
+		},
+		{
+			description: "For device with MPS replicas, result map should include only annotated device IDs",
+			config: &spec.Config{
+				Sharing: spec.Sharing{
+					MPS: spec.MPS{
+						Resources: []spec.MPSResource{
+							{
+								Name:     "nvidia.com/gpu",
+								MemoryGB: 20,
+								Replicas: 2,
+								Devices:  []spec.ReplicatedDeviceRef{"id-0"},
+							},
+						},
+					},
+				},
+			},
+			deviceMap: map[spec.ResourceName]Devices{
+				"nvidia.com/gpu": {
+					"id-0": &Device{
+						Device: pluginapi.Device{ID: "id-0"},
+						Paths:  []string{},
+						Index:  "0",
+					},
+					"id-1": &Device{
+						Device: pluginapi.Device{ID: "id-1"},
+						Paths:  []string{},
+						Index:  "1",
+					},
+				},
+			},
+			expectedErr: false,
+			expectedDeviceMap: map[spec.ResourceName]Devices{
+				"nvidia.com/gpu": {
+					NewAnnotatedID("id-0", 0).String(): &Device{
+						Device: pluginapi.Device{
+							ID:       NewAnnotatedID("id-0", 0).String(),
+							Health:   "",
+							Topology: nil,
+						},
+						Paths: []string{},
+						Index: "0",
+					},
+					NewAnnotatedID("id-0", 1).String(): &Device{
+						Device: pluginapi.Device{
+							ID:       NewAnnotatedID("id-0", 1).String(),
+							Health:   "",
+							Topology: nil,
+						},
+						Paths: []string{},
+						Index: "0",
+					},
+					"id-1": &Device{
+						Device: pluginapi.Device{
+							ID: "id-1",
+						},
+						Paths: []string{},
+						Index: "1",
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			res, err := addMPSReplicas(tc.config, tc.deviceMap)
+			if tc.expectedErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+				require.EqualValues(t, tc.expectedDeviceMap, res)
+			}
+		})
+	}
+}
