@@ -1,4 +1,45 @@
 # NVIDIA device plugin for Kubernetes
+This our forked version of the NVIDIA device plugin for Kubernetes.
+
+We have made some changes to the original version to make it support GPU sharing through 
+NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing 
+of a GPU among multiple processes with memory and compute resources limits.
+
+Specifically, we extended the plugin `sharing` configuration with the field `MPS`, which allows to specify which GPUs 
+to share through MPS, in a similar way to the time-slicing sharing configuration. You can find a sample configuration
+below, which exposes to Kubernetes the GPU with index `0` as two GPU slices (named `nvidia.com/gpu-2gb`) with 2GB of 
+memory each.
+```yaml
+version: v1
+flags:
+  migStrategy: none
+sharing:
+  MPS: 
+    failRequestsGreaterThanOne: true
+    resources:
+      - name: nvidia.com/gpu
+        rename: nvidia.com/gpu-2gb
+        memoryGB: 2
+        replicas: 2
+        devices: ["0"]
+```
+
+During resource allocation, the plugin checks whether the requested GPU ID corresponds to an MPS replicated resource, 
+and if so it mounts the required volumes and sets the required environment variables to make the container use MPS, 
+enforcing the memory and compute resource limits specified in the plugin configuration.
+
+We also changed the installation Helm chart so that MPS sharing can be enabled or disabled through the value `mps.enabled`.
+When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU 
+mode to `EXCLUSIVE_PROCESS`. 
+
+## Installation
+You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
+```bash
+helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-pugin:v0.13.0 --generate-name -n nebuly-nvidia
+```
+You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
+
+
 
 ## Table of Contents
 
