@@ -1,0 +1,12 @@
+{{- if .Values.mps.enabled }}
+*** WARNING: NVIDIA MPS enabled ***
+Server running with userID {{ .Values.mps.userID }}: all containers requesting GPU resources must run with this ID.
+Any container consuming GPU resources exposed by the Plugin will fail if it is not running with userID {{ .Values.mps.userID }}.
+
+When MPS is enabled, containers requesting GPU resources must share host IPC namespace.
+You can set is in the Pod spec as follows:
+```
+hostIPC: true
+```
+
+{{- end }}

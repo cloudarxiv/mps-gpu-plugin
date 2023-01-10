@@ -11,4 +11,23 @@ data:
   {{ $name }}: |-
 {{ $contents | indent 4 }}
 {{- end -}}
+{{- else -}}
+{{- if .Values.config.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nvidia-device-plugin.configMapName" $ }}
+  namespace: {{ include "nvidia-device-plugin.namespace" $ }}
+  labels:
+    {{- include "nvidia-device-plugin.labels" $ | nindent 4 }}
+data:
+  {{- with lookup "v1" "ConfigMap" .Release.Namespace (include "nvidia-device-plugin.configMapName" .) }}
+  {{- toYaml .data | nindent 2 }}
+  {{- else }}
+  default: |
+     version: v1
+     flags:
+       migStrategy: none
+  {{- end }}
+{{- end -}}
 {{- end -}}

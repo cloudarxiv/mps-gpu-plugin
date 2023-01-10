@@ -86,6 +86,13 @@ Full image name with tag
 {{- end }}
 
 {{/*
+Full MPS Server image name with tag
+*/}}
+{{- define "mps-server.fullimage" -}}
+{{- .Values.mps.image.repository -}}:{{- .Values.mps.image.tag -}}
+{{- end }}
+
+{{/*
 Security context for the plugin
 */}}
 {{- define "nvidia-device-plugin.securityContext" -}}
@@ -152,17 +159,6 @@ Check if an explicit set of configs has been provided or not
 {{- $result := true -}}
 {{- if empty .Values.config.map  -}}
   {{- $result = false -}}
-{{- end -}}
-{{- $result -}}
-{{- end }}
-
-{{/*
-Check if there is a ConfigMap in use or not
-*/}}
-{{- define "nvidia-device-plugin.hasConfigMap" -}}
-{{- $result := false -}}
-{{- if ne (include "nvidia-device-plugin.configMapName" .) "" -}}
-  {{- $result = true -}}
 {{- end -}}
 {{- $result -}}
 {{- end }}

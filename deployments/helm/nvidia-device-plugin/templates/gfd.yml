@@ -15,7 +15,6 @@
 {{- if .Values.gfd.enabled }}
 
 {{- $root := . }}
-{{- $hasConfigMap := (include "nvidia-device-plugin.hasConfigMap" .) | trim }}
 {{- $configMapName := (include "nvidia-device-plugin.configMapName" .) | trim }}
 {{- $migStrategiesAreAllNone := (include "nvidia-device-plugin.allPossibleMigStrategiesAreNone" .) | trim }}
 
@@ -54,7 +53,6 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if eq $hasConfigMap "true" }}
       serviceAccountName: {{ include "nvidia-device-plugin.fullname" $root }}-service-account
       shareProcessNamespace: true
       initContainers:
@@ -91,9 +89,7 @@ spec:
             mountPath: /available-configs
           - name: config
             mountPath: /config
-      {{- end }}
       containers:
-      {{- if eq $hasConfigMap "true" }}
         - image: {{ include "nvidia-device-plugin.fullimage" $root }}
           name: gpu-feature-discovery-sidecar
           command: ["config-manager"]
@@ -129,7 +125,6 @@ spec:
               mountPath: /config
           securityContext:
             {{- include "gpu-feature-discovery.securityContext" $root | nindent 12 }}
-      {{- end }}
         - image: {{ include "nvidia-device-plugin.fullimage" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           name: gpu-feature-discovery-ctr
@@ -150,10 +145,8 @@ spec:
             - name: GFD_SLEEP_INTERVAL
               value: "{{ .Values.sleepInterval }}"
           {{- end }}
-          {{- if eq $hasConfigMap "true" }}
             - name: GFD_CONFIG_FILE
               value: /config/config.yaml
-          {{- end }}
           {{- if ne $migStrategiesAreAllNone "true" }}
             - name: NVIDIA_MIG_MONITOR_DEVICES
               value: all
@@ -165,12 +158,10 @@ spec:
               mountPath: "/etc/kubernetes/node-feature-discovery/features.d"
             - name: host-sys
               mountPath: "/sys"
-          {{- if eq $hasConfigMap "true" }}
             - name: available-configs
               mountPath: /available-configs
             - name: config
               mountPath: /config
-          {{- end }}
           {{- with .Values.resources }}
           resources:
             {{- toYaml . | nindent 12 }}
@@ -182,13 +173,11 @@ spec:
         - name: host-sys
           hostPath:
             path: "/sys"
-      {{- if eq $hasConfigMap "true" }}
         - name: available-configs
           configMap:
             name: "{{ $configMapName }}"
         - name: config
           emptyDir: {}
-      {{- end }}
       {{- $nodeSelector := $root.Values.nodeSelector }}
       {{- if empty $nodeSelector }}
       {{- $nodeSelector = .Values.nodeSelector }}

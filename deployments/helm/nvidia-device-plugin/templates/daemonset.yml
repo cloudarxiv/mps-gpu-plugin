@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-{{- $hasConfigMap := (include "nvidia-device-plugin.hasConfigMap" .) | trim }}
 {{- $configMapName := (include "nvidia-device-plugin.configMapName" .) | trim }}
 {{- $migStrategiesAreAllNone := (include "nvidia-device-plugin.allPossibleMigStrategiesAreNone" .) | trim }}
 
@@ -44,6 +43,9 @@ spec:
       annotations:
         {{- include "nvidia-device-plugin.podAnnotations" (dict "local" . "root" .) | nindent 8 }}
     spec:
+      {{- if .Values.mps.enabled }}
+      hostIPC: true
+      {{- end }}
       {{- if .Values.priorityClassName }}
       priorityClassName: {{ .Values.priorityClassName }}
       {{- end }}
@@ -56,10 +58,23 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if eq $hasConfigMap "true" }}
       serviceAccountName: {{ include "nvidia-device-plugin.fullname" . }}-service-account
       shareProcessNamespace: true
       initContainers:
+      {{- if .Values.mps.enabled }}
+      - image: {{ include "nvidia-device-plugin.fullimage" . }}
+        name: set-compute-mode
+        command: ['nvidia-smi', '-c', 'EXCLUSIVE_PROCESS']
+        securityContext:
+          capabilities:
+            add: ["SYS_ADMIN"]
+      - image: "busybox"
+        name: set-nvidia-mps-volume-permissions
+        command: ["/bin/sh", "-c", {{ printf "chown %d:%d /tmp/nvidia-mps" (.Values.mps.userID | int) (.Values.mps.userID | int) }}]
+        volumeMounts:
+        - name: nvidia-mps
+          mountPath: /tmp/nvidia-mps
+      {{- end }}
       - image: {{ include "nvidia-device-plugin.fullimage" . }}
         name: nvidia-device-plugin-init
         command: ["config-manager"]
@@ -93,9 +108,7 @@ spec:
             mountPath: /available-configs
           - name: config
             mountPath: /config
-      {{- end }}
       containers:
-      {{- if eq $hasConfigMap "true" }}
       - image: {{ include "nvidia-device-plugin.fullimage" . }}
         name: nvidia-device-plugin-sidecar
         command: ["config-manager"]
@@ -131,6 +144,22 @@ spec:
             mountPath: /config
         securityContext:
           {{- include "nvidia-device-plugin.securityContext" . | nindent 10 }}
+      {{- if .Values.mps.enabled }}
+      - image : {{ include "mps-server.fullimage" . }}
+        imagePullPolicy: {{ .Values.mps.image.pullPolicy }}
+        name: nvidia-mps-server
+        env:
+          - name: CUDA_MPS_PIPE_DIRECTORY
+            value: /tmp/nvidia-mps
+          - name: CUDA_MPS_LOG_DIRECTORY
+            value: /tmp/nvidia-mps
+        volumeMounts:
+          - name: nvidia-mps
+            mountPath: /tmp/nvidia-mps
+        securityContext:
+          runAsUser: {{ .Values.mps.userID }}
+          capabilities:
+            drop: ["ALL"]
       {{- end }}
       - image: {{ include "nvidia-device-plugin.fullimage" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -168,10 +197,8 @@ spec:
           - name: MOFED_ENABLED
             value: "{{ .Values.mofedEnabled }}"
         {{- end }}
-        {{- if eq $hasConfigMap "true" }}
           - name: CONFIG_FILE
             value: /config/config.yaml
-        {{- end }}
         {{- if ne $migStrategiesAreAllNone "true" }}
           - name: NVIDIA_MIG_MONITOR_DEVICES
             value: all
@@ -181,12 +208,10 @@ spec:
         volumeMounts:
           - name: device-plugin
             mountPath: /var/lib/kubelet/device-plugins
-          {{- if eq $hasConfigMap "true" }}
           - name: available-configs
             mountPath: /available-configs
           - name: config
             mountPath: /config
-          {{- end }}
         {{- with .Values.resources }}
         resources:
           {{- toYaml . | nindent 10 }}
@@ -195,12 +220,16 @@ spec:
         - name: device-plugin
           hostPath:
             path: /var/lib/kubelet/device-plugins
-        {{- if eq $hasConfigMap "true" }}
         - name: available-configs
           configMap:
             name: "{{ $configMapName }}"
         - name: config
           emptyDir: {}
+        {{- if .Values.mps.enabled }}
+        - name: nvidia-mps
+          hostPath:
+            path: /tmp/nvidia-mps
+            type: DirectoryOrCreate
         {{- end }}
       {{- $nodeSelector := .Values.nodeSelector }}
       {{- if and (empty $nodeSelector) .Subcharts.gfd }}
