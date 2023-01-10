@@ -158,23 +158,19 @@ PHONY: .shell
 ### Nebuly targets ###
 
 
-## Versions
-PLUGIN_VERSION ?= 0.13.0
-MPS_SERVER_VERSION ?= 0.0.1
-
 # Docker image names
 PLUGIN_DOCKER_IMAGE_NAME ?= k8s-device-plugin
 MPS_SERVER_DOCKER_IMAGE_NAME ?= nvidia-mps-server
 
 # Helm chart URL to push Helm charts
-HELM_CHART_REGISTRY ?= oci://ghcr.io/telemaco019/helm-charts
+HELM_CHART_REGISTRY ?= oci://ghcr.io/nebuly-ai/helm-charts
 # Docker registry
 DOCKER_REGISTRY ?= ghcr.io/nebuly-ai
 
 
 .PHONY: neb-docker-build-plugin
 neb-docker-build-plugin:
-	$(DOCKER) build -t ${DOCKER_REGISTRY}/${PLUGIN_DOCKER_IMAGE_NAME}:${PLUGIN_VERSION} -f deployments/container/Dockerfile.ubuntu .
+	$(DOCKER) build -t ${DOCKER_REGISTRY}/${PLUGIN_DOCKER_IMAGE_NAME}:${VERSION} -f deployments/container/Dockerfile.ubuntu .
 
 .PHONY: neb-docker-build-mps-server
 neb-docker-build-mps-server:
@@ -182,7 +178,7 @@ neb-docker-build-mps-server:
 
 .PHONY: neb-docker-push-plugin
 neb-docker-push-plugin:
-	$(DOCKER) push ${DOCKER_REGISTRY}/${PLUGIN_DOCKER_IMAGE_NAME}:${PLUGIN_VERSION}
+	$(DOCKER) push ${DOCKER_REGISTRY}/${PLUGIN_DOCKER_IMAGE_NAME}:${VERSION}
 
 .PHONY: neb-docker-push-mps-server
 neb-docker-push-mps-server:
@@ -193,3 +189,10 @@ neb-docker-build: neb-docker-build-plugin neb-docker-build-mps-server
 
 .PHONY: neb-docker-push
 neb-docker-push: neb-docker-push-plugin neb-docker-push-mps-server
+
+.PHONY: helm-push
+helm-push:
+	helm package deployments/helm/nvidia-device-plugin --destination /tmp
+	helm push /tmp/nvidia-device-plugin-*.tgz $(HELM_CHART_REGISTRY)
+	rm /tmp/nvidia-device-plugin-*.tgz
+

@@ -46,8 +46,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Run tests
-#        run: make test
+      - name: Run tests
+        run: make test
 
       - name: Build Docker images
         run: make neb-docker-build
@@ -57,6 +57,12 @@ jobs:
 
       - name: Push Docker images
         run: make neb-docker-push
+        env:
+          PLUGIN_VERSION: ${{ github.event.inputs.pluginVersion }}
+          MPS_SERVER_VERSION: ${{ github.event.inputs.mpsServerVersion }}
+
+      - name: Push Helm chart
+        run: make helm-push
         env:
           PLUGIN_VERSION: ${{ github.event.inputs.pluginVersion }}
           MPS_SERVER_VERSION: ${{ github.event.inputs.mpsServerVersion }}
