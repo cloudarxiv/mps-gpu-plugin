@@ -54,7 +54,7 @@ image:
   repository: ghcr.io/nebuly-ai/k8s-device-plugin
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: ""
 
 mps:
   enabled: true
@@ -64,7 +64,7 @@ mps:
   image:
     repository: ghcr.io/nebuly-ai/nvidia-mps-server
     pullPolicy: IfNotPresent
-    tag: "latest"
+    tag: "0.0.1"
 
 
 updateStrategy:

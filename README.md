@@ -35,7 +35,7 @@ mode to `EXCLUSIVE_PROCESS`.
 ## Installation
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
 ```bash
-helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-pugin:v0.13.0 --generate-name -n nebuly-nvidia
+helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-pugin:0.13.0 --generate-name -n nebuly-nvidia
 ```
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
 
