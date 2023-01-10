@@ -24,6 +24,11 @@ import (
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 
+const (
+	mockedUUIDOne = "GPU-b1028956-cfa2-0990-bf4a-5da9abb51763"
+	mockedUUIDTwo = "GPU-4cf8db2d-06c0-7d70-1a51-e59b25b2c16c"
+)
+
 func TestDeviceMapInsert(t *testing.T) {
 	device0 := Device{Device: pluginapi.Device{ID: "0"}}
 	device0withIndex := Device{Device: pluginapi.Device{ID: "0"}, Index: "index"}
@@ -165,7 +170,7 @@ func TestAddMPSReplicas(t *testing.T) {
 								Name:     "nvidia.com/gpu",
 								MemoryGB: 20,
 								Replicas: 2,
-								Devices:  []spec.ReplicatedDeviceRef{"id-0"},
+								Devices:  []spec.ReplicatedDeviceRef{mockedUUIDOne},
 							},
 						},
 					},
@@ -173,13 +178,13 @@ func TestAddMPSReplicas(t *testing.T) {
 			},
 			deviceMap: map[spec.ResourceName]Devices{
 				"nvidia.com/gpu": {
-					"id-0": &Device{
-						Device: pluginapi.Device{ID: "id-0"},
+					mockedUUIDOne: &Device{
+						Device: pluginapi.Device{ID: mockedUUIDOne},
 						Paths:  []string{},
 						Index:  "0",
 					},
-					"id-1": &Device{
-						Device: pluginapi.Device{ID: "id-1"},
+					mockedUUIDTwo: &Device{
+						Device: pluginapi.Device{ID: mockedUUIDTwo},
 						Paths:  []string{},
 						Index:  "1",
 					},
@@ -188,27 +193,27 @@ func TestAddMPSReplicas(t *testing.T) {
 			expectedErr: false,
 			expectedDeviceMap: map[spec.ResourceName]Devices{
 				"nvidia.com/gpu": {
-					NewAnnotatedID("id-0", 0).String(): &Device{
+					NewAnnotatedID(mockedUUIDOne, 0).String(): &Device{
 						Device: pluginapi.Device{
-							ID:       NewAnnotatedID("id-0", 0).String(),
+							ID:       NewAnnotatedID(mockedUUIDOne, 0).String(),
 							Health:   "",
 							Topology: nil,
 						},
 						Paths: []string{},
 						Index: "0",
 					},
-					NewAnnotatedID("id-0", 1).String(): &Device{
+					NewAnnotatedID(mockedUUIDOne, 1).String(): &Device{
 						Device: pluginapi.Device{
-							ID:       NewAnnotatedID("id-0", 1).String(),
+							ID:       NewAnnotatedID(mockedUUIDOne, 1).String(),
 							Health:   "",
 							Topology: nil,
 						},
 						Paths: []string{},
 						Index: "0",
 					},
-					"id-1": &Device{
+					mockedUUIDTwo: &Device{
 						Device: pluginapi.Device{
-							ID: "id-1",
+							ID: mockedUUIDTwo,
 						},
 						Paths: []string{},
 						Index: "1",
