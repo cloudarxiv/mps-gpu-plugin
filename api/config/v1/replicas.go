@@ -201,16 +201,12 @@ func (s *TimeSlicing) UnmarshalJSON(b []byte) error {
 
 	resources, exists := ts["resources"]
 	if !exists {
-		return fmt.Errorf("no resources specified")
+		resources = []byte(`[]`)
 	}
 
 	err = json.Unmarshal(resources, &s.Resources)
 	if err != nil {
 		return err
-	}
-
-	if len(s.Resources) == 0 {
-		return fmt.Errorf("no resources specified")
 	}
 
 	for i, r := range s.Resources {

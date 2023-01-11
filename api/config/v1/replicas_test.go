@@ -383,13 +383,19 @@ func TestUnmarshalTimeSlicing(t *testing.T) {
 		},
 		{
 			input: `{}`,
-			err:   true,
+			err:   false,
+			output: TimeSlicing{
+				Resources: []ReplicatedResource{},
+			},
 		},
 		{
 			input: `{
 				"resources": []
 			}`,
-			err: true,
+			err: false,
+			output: TimeSlicing{
+				Resources: []ReplicatedResource{},
+			},
 		},
 		{
 			input: `{
