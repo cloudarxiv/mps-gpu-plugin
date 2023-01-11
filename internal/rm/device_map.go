@@ -53,7 +53,7 @@ func (b *deviceMapBuilder) build() (DeviceMap, error) {
 	}
 
 	// Add MPS replicas only if TimeSlicing sharing is not enabled
-	if b.config.Sharing.TimeSlicing.Resources != nil {
+	if len(b.config.Sharing.TimeSlicing.Resources) > 0 {
 		return devices, nil
 	}
 	devices, err = addMPSReplicas(b.config, devices)
