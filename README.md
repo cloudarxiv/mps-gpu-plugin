@@ -1,14 +1,16 @@
 # NVIDIA device plugin for Kubernetes
+
 This our forked version of the NVIDIA device plugin for Kubernetes.
 
-We have made some changes to the original version to make it support GPU sharing through 
-NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing 
+We have made some changes to the original version to make it support GPU sharing through
+NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing
 of a GPU among multiple processes with memory and compute resources limits.
 
-Specifically, we extended the plugin `sharing` configuration with the field `MPS`, which allows to specify which GPUs 
+Specifically, we extended the plugin `sharing` configuration with the field `MPS`, which allows to specify which GPUs
 to share through MPS, in a similar way to the time-slicing sharing configuration. You can find a sample configuration
-below, which exposes to Kubernetes the GPU with index `0` as two GPU slices (named `nvidia.com/gpu-2gb`) with 2GB of 
+below, which exposes to Kubernetes the GPU with index `0` as two GPU slices (named `nvidia.com/gpu-2gb`) with 2GB of
 memory each.
+
 ```yaml
 version: v1
 flags:
@@ -24,45 +26,46 @@ sharing:
         devices: ["0"]
 ```
 
-During resource allocation, the plugin checks whether the requested GPU ID corresponds to an MPS replicated resource, 
-and if so it mounts the required volumes and sets the required environment variables to make the container use MPS, 
+During resource allocation, the plugin checks whether the requested GPU ID corresponds to an MPS replicated resource,
+and if so it mounts the required volumes and sets the required environment variables to make the container use MPS,
 enforcing the memory and compute resource limits specified in the plugin configuration.
 
 We also changed the installation Helm chart so that MPS sharing can be enabled or disabled through the value `mps.enabled`.
-When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU 
-mode to `EXCLUSIVE_PROCESS`. 
+When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU
+mode to `EXCLUSIVE_PROCESS`.
 
 ## Installation
+
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
+
 ```bash
-helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-pugin:0.13.0 --generate-name -n nebuly-nvidia
+helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin --version 0.13.0 --generate-name -n nebuly-nvidia --create-namespace
 ```
+
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
-
-
 
 ## Table of Contents
 
 - [About](#about)
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-  * [Preparing your GPU Nodes](#preparing-your-gpu-nodes)
-  * [Enabling GPU Support in Kubernetes](#enabling-gpu-support-in-kubernetes)
-  * [Running GPU Jobs](#running-gpu-jobs)
+  - [Preparing your GPU Nodes](#preparing-your-gpu-nodes)
+  - [Enabling GPU Support in Kubernetes](#enabling-gpu-support-in-kubernetes)
+  - [Running GPU Jobs](#running-gpu-jobs)
 - [Configuring the NVIDIA device plugin binary](#configuring-the-nvidia-device-plugin-binary)
-  * [As command line flags or envvars](#as-command-line-flags-or-envvars)
-  * [As a configuration file](#as-a-configuration-file)
-  * [Configuration Option Details](#configuration-option-details)
-  * [Shared Access to GPUs with CUDA Time-Slicing](#shared-access-to-gpus-with-cuda-time-slicing)
+  - [As command line flags or envvars](#as-command-line-flags-or-envvars)
+  - [As a configuration file](#as-a-configuration-file)
+  - [Configuration Option Details](#configuration-option-details)
+  - [Shared Access to GPUs with CUDA Time-Slicing](#shared-access-to-gpus-with-cuda-time-slicing)
 - [Deployment via `helm`](#deployment-via-helm)
-  * [Configuring the device plugin's `helm` chart](#configuring-the-device-plugins-helm-chart)
-    + [Passing configuration to the plugin via a `ConfigMap`.](#passing-configuration-to-the-plugin-via-a-configmap)
+  - [Configuring the device plugin's `helm` chart](#configuring-the-device-plugins-helm-chart)
+    - [Passing configuration to the plugin via a `ConfigMap`.](#passing-configuration-to-the-plugin-via-a-configmap)
       - [Single Config File Example](#single-config-file-example)
       - [Multiple Config File Example](#multiple-config-file-example)
       - [Updating Per-Node Configuration With a Node Label](#updating-per-node-configuration-with-a-node-label)
-    + [Setting other helm chart values](#setting-other-helm-chart-values)
-    + [Deploying with gpu-feature-discovery for automatic node labels](#deploying-with-gpu-feature-discovery-for-automatic-node-labels)
-  * [Deploying via `helm install` with a direct URL to the `helm` package](#deploying-via-helm-install-with-a-direct-url-to-the-helm-package)
+    - [Setting other helm chart values](#setting-other-helm-chart-values)
+    - [Deploying with gpu-feature-discovery for automatic node labels](#deploying-with-gpu-feature-discovery-for-automatic-node-labels)
+  - [Deploying via `helm install` with a direct URL to the `helm` package](#deploying-via-helm-install-with-a-direct-url-to-the-helm-package)
 - [Building and Running Locally](#building-and-running-locally)
 - [Changelog](#changelog)
 - [Issues and Contributing](#issues-and-contributing)
@@ -70,6 +73,7 @@ You can find all the available configuration values [here](deployments/helm/nvid
 ## About
 
 The NVIDIA device plugin for Kubernetes is a Daemonset that allows you to automatically:
+
 - Expose the number of GPUs on each nodes of your cluster
 - Keep track of the health of your GPUs
 - Run GPU enabled containers in your Kubernetes cluster.
@@ -77,21 +81,23 @@ The NVIDIA device plugin for Kubernetes is a Daemonset that allows you to automa
 This repository contains NVIDIA's official implementation of the [Kubernetes device plugin](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/resource-management/device-plugin.md).
 
 Please note that:
+
 - The NVIDIA device plugin API is beta as of Kubernetes v1.10.
 - The NVIDIA device plugin is currently lacking
-    - Comprehensive GPU health checking features
-    - GPU cleanup features
-    - ...
+  - Comprehensive GPU health checking features
+  - GPU cleanup features
+  - ...
 - Support will only be provided for the official NVIDIA device plugin (and not
   for forks or other variants of this plugin).
 
 ## Prerequisites
 
 The list of prerequisites for running the NVIDIA device plugin is described below:
-* NVIDIA drivers ~= 384.81
-* nvidia-docker >= 2.0 || nvidia-container-toolkit >= 1.7.0 (>= 1.11.0 to use integrated GPUs on Tegra-based systems)
-* nvidia-container-runtime configured as the default low-level runtime
-* Kubernetes version >= 1.10
+
+- NVIDIA drivers ~= 384.81
+- nvidia-docker >= 2.0 || nvidia-container-toolkit >= 1.7.0 (>= 1.11.0 to use integrated GPUs on Tegra-based systems)
+- nvidia-container-runtime configured as the default low-level runtime
+- Kubernetes version >= 1.10
 
 ## Quick Start
 
@@ -101,11 +107,12 @@ The following steps need to be executed on all your GPU nodes.
 This README assumes that the NVIDIA drivers and the `nvidia-container-toolkit` have been pre-installed.
 It also assumes that you have configured the `nvidia-container-runtime` as the default low-level runtime to use.
 
-Please see: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+Please see: <https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html>
 
 #### Example for debian-based systems with `docker` and `containerd`
 
 ##### Install the `nvidia-container-toolkit`
+
 ```bash
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
 curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | sudo apt-key add -
@@ -115,9 +122,11 @@ sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
 ```
 
 ##### Configure `docker`
+
 When running `kubernetes` with `docker`, edit the config file which is usually
 present at `/etc/docker/daemon.json` to set up `nvidia-container-runtime` as
 the default low-level runtime:
+
 ```json
 {
     "default-runtime": "nvidia",
@@ -129,15 +138,19 @@ the default low-level runtime:
     }
 }
 ```
+
 And then restart `docker`:
+
 ```
-$ sudo systemctl restart docker
+sudo systemctl restart docker
 ```
 
 ##### Configure `containerd`
+
 When running `kubernetes` with `containerd`, edit the config file which is
 usually present at `/etc/containerd/config.toml` to set up
 `nvidia-container-runtime` as the default low-level runtime:
+
 ```
 version = 2
 [plugins]
@@ -154,9 +167,11 @@ version = 2
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
             BinaryName = "/usr/bin/nvidia-container-runtime"
 ```
+
 And then restart `containerd`:
+
 ```
-$ sudo systemctl restart containerd
+sudo systemctl restart containerd
 ```
 
 ### Enabling GPU Support in Kubernetes
@@ -165,7 +180,7 @@ Once you have configured the options above on all the GPU nodes in your
 cluster, you can enable GPU support by deploying the following Daemonset:
 
 ```shell
-$ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.13.0/nvidia-device-plugin.yml
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.13.0/nvidia-device-plugin.yml
 ```
 
 **Note:** This is a simple static daemonset meant to demonstrate the basic
@@ -234,6 +249,7 @@ deploying the plugin via `helm`.
 | `--config-file`          | `$CONFIG_FILE`          | `""`            |
 
 ### As a configuration file
+
 ```
 version: v1
 flags:
@@ -253,6 +269,7 @@ All options inside the `plugin` section are specific to the plugin. All
 options outside of this section are shared.
 
 ### Configuration Option Details
+
 **`MIG_STRATEGY`**:
   the desired strategy for exposing MIG devices on GPUs that support it
 
@@ -363,8 +380,8 @@ granted replicas from the same underlying GPU, and each workload has access to
 the GPU memory and runs in the same fault-domain as of all the others (meaning
 if one workload crashes, they all do).
 
-
 These extended options can be seen below:
+
 ```
 version: v1
 sharing:
@@ -391,6 +408,7 @@ pod will fail with an `UnexpectedAdmissionError` and need to be manually deleted
 updated, and redeployed.
 
 For example:
+
 ```
 version: v1
 sharing:
@@ -469,11 +487,13 @@ As of now, the only supported resource available for time-slicing are
 configuring a node with the mixed MIG strategy.
 
 For example, the full set of time-sliceable resources on a T4 card would be:
+
 ```
 nvidia.com/gpu
 ```
 
 And the full set of time-sliceable resources on an A100 40GB card would be:
+
 ```
 nvidia.com/gpu
 nvidia.com/mig-1g.5gb
@@ -483,6 +503,7 @@ nvidia.com/mig-7g.40gb
 ```
 
 Likewise, on an A100 80GB card, they would be:
+
 ```
 nvidia.com/gpu
 nvidia.com/mig-1g.10gb
@@ -498,22 +519,25 @@ Instructions for installing `helm` can be found
 [here](https://helm.sh/docs/intro/install/).
 
 Begin by setting up the plugin's `helm` repository and updating it at follows:
+
 ```shell
-$ helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
-$ helm repo update
+helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
+helm repo update
 ```
 
 Then verify that the latest release (`v0.13.0`) of the plugin is available:
+
 ```
 $ helm search repo nvdp --devel
-NAME                     	  CHART VERSION  APP VERSION	DESCRIPTION
-nvdp/nvidia-device-plugin	  0.13.0	 0.13.0		A Helm chart for ...
+NAME                        CHART VERSION  APP VERSION DESCRIPTION
+nvdp/nvidia-device-plugin   0.13.0  0.13.0  A Helm chart for ...
 ```
 
 Once this repo is updated, you can begin installing packages from it to deploy
 the `nvidia-device-plugin` helm chart.
 
 The most basic installation command without any options is then:
+
 ```
 helm upgrade -i nvdp nvdp/nvidia-device-plugin \
   --namespace nvidia-device-plugin \
@@ -539,9 +563,9 @@ if desired. Both methods are discussed in more detail below.
 The full set of values that can be set are found here:
 [here](https://github.com/NVIDIA/k8s-device-plugin/blob/v0.13.0/deployments/helm/nvidia-device-plugin/values.yaml).
 
-#### Passing configuration to the plugin via a `ConfigMap`.
+#### Passing configuration to the plugin via a `ConfigMap`
 
-In general, we provide a mechanism to pass _multiple_ configuration files to
+In general, we provide a mechanism to pass *multiple* configuration files to
 to the plugin's `helm` chart, with the ability to choose which configuration
 file should be applied to a node via a node label.
 
@@ -549,6 +573,7 @@ In this way, a single chart can be used to deploy each component, but custom
 configurations can be applied to different nodes throughout the cluster.
 
 There are two ways to provide a `ConfigMap` for use by the plugin:
+
   1. Via an external reference to a pre-defined `ConfigMap`
   1. As a set of named config files to build an integrated `ConfigMap` associated with the chart
 
@@ -557,8 +582,10 @@ In both cases, the value `config.default` can be set to point to one of the
 named configs in the `ConfigMap` and provide a default configuration for nodes
 that have not been customized via a node label (more on this later).
 
-#####  Single Config File Example
+##### Single Config File Example
+
 As an example, create a valid config file on your local filesystem, such as the following:
+
 ```
 cat << EOF > /tmp/dp-example-config0.yaml
 version: v1
@@ -574,6 +601,7 @@ EOF
 ```
 
 And deploy the device plugin via helm (pointing it at this config file and giving it a name):
+
 ```
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -589,13 +617,16 @@ applied when the plugin comes online.
 
 If you don’t want the plugin’s helm chart to create the `ConfigMap` for you, you
 can also point it at a pre-created `ConfigMap` as follows:
+
 ```
-$ kubectl create ns nvidia-device-plugin
+kubectl create ns nvidia-device-plugin
 ```
+
 ```
 $ kubectl create cm -n nvidia-device-plugin nvidia-plugin-configs \
     --from-file=config=/tmp/dp-example-config0.yaml
 ```
+
 ```
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -604,11 +635,12 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --set config.name=nvidia-plugin-configs
 ```
 
-#####  Multiple Config File Example
+##### Multiple Config File Example
 
 For multiple config files, the procedure is similar.
 
 Create a second `config` file with the following contents:
+
 ```
 cat << EOF > /tmp/dp-example-config1.yaml
 version: v1
@@ -624,6 +656,7 @@ EOF
 ```
 
 And redeploy the device plugin via helm (pointing it at both configs with a specified default).
+
 ```
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -635,14 +668,17 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
 ```
 
 As before, this can also be done with a pre-created `ConfigMap` if desired:
+
 ```
-$ kubectl create ns nvidia-device-plugin
+kubectl create ns nvidia-device-plugin
 ```
+
 ```
 $ kubectl create cm -n nvidia-device-plugin nvidia-plugin-configs \
     --from-file=config0=/tmp/dp-example-config0.yaml \
     --from-file=config1=/tmp/dp-example-config1.yaml
 ```
+
 ```
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -655,7 +691,7 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
 **Note:** If the `config.default` flag is not explicitly set, then a default
 value will be inferred from the config if one of the config names is set to
 '`default`'. If neither of these are set, then the deployment will fail unless
-there is only **_one_** config provided. In the case of just a single config being
+there is only ***one*** config provided. In the case of just a single config being
 provided, it will be chosen as the default because there is no other option.
 
 ##### Updating Per-Node Configuration With a Node Label
@@ -663,6 +699,7 @@ provided, it will be chosen as the default because there is no other option.
 With this setup, plugins on all nodes will have `config0` configured for them
 by default. However, the following label can be set to change which
 configuration is applied:
+
 ```
 kubectl label nodes <node-name> –-overwrite \
     nvidia.com/device-plugin.config=<config-name>
@@ -670,6 +707,7 @@ kubectl label nodes <node-name> –-overwrite \
 
 For example, applying a custom config for all nodes that have T4 GPUs installed
 on them might be:
+
 ```
 kubectl label node \
     --overwrite \
@@ -677,7 +715,7 @@ kubectl label node \
     nvidia.com/device-plugin.config=t4-config
 ```
 
-**Note:** This label can be applied either _before_ or _after_ the plugin is
+**Note:** This label can be applied either *before* or *after* the plugin is
 started to get the desired configuration applied on the node. Anytime it
 changes value, the plugin will immediately be updated to start serving the
 desired configuration. If it is set to an unknown value, it will skip
@@ -692,6 +730,7 @@ direct values to set the configuration options of the plugin without using a
 `ConfigMap`), or used to override these options as desired.
 
 These values are as follows:
+
 ```
   migStrategy:
       the desired strategy for exposing MIG devices on GPUs that support it
@@ -738,6 +777,7 @@ Examples of setting these options include:
 
 Enabling compatibility with the `CPUManager` and running with a request for
 100ms of CPU time and a limit of 512MB of memory.
+
 ```shell
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -749,6 +789,7 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
 ```
 
 Using the legacy Daemonset API (only available on Kubernetes < `v1.16`):
+
 ```shell
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -758,6 +799,7 @@ $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
 ```
 
 Enabling compatibility with the `CPUManager` and the `mixed` `migStrategy`
+
 ```shell
 $ helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -777,6 +819,7 @@ set of GPUs available on a node. Under the hood, it leverages Node Feature
 Discovery to perform this labeling.
 
 To enable it, simply set `gfd.enabled=true` during helm install.
+
 ```
 helm upgrade -i nvdp nvdp/nvidia-device-plugin \
     --version=0.13.0 \
@@ -801,6 +844,7 @@ nvidia.com/<resource-name>.replicas = <num-replicas>
 
 Additionally, the `nvidia.com/<resource-name>.product` will be modified as follows if
 `renameByDefault=false`.
+
 ```
 nvidia.com/<resource-name>.product = <product name>-SHARED
 ```
@@ -818,6 +862,7 @@ simply requesting it in their pod spec.
 Note: When running with `renameByDefault=false` and `migStrategy=single` both
 the MIG profile name and the new `SHARED` annotation will be appended to the
 product name, e.g.:
+
 ```
 nvidia.com/gpu.product = A100-SXM4-40GB-MIG-1g.5gb-SHARED
 ```
@@ -830,6 +875,7 @@ The example below installs the same chart as the method above, except that
 it uses a direct URL to the `helm` chart instead of via the `helm` repo.
 
 Using the default values for the flags:
+
 ```shell
 $ helm upgrade -i nvdp \
     --namespace nvidia-device-plugin \
@@ -847,13 +893,16 @@ easily be modified to work with any available tag or branch.
 ### With Docker
 
 #### Build
+
 Option 1, pull the prebuilt image from [Docker Hub](https://hub.docker.com/r/nvidia/k8s-device-plugin):
+
 ```shell
-$ docker pull nvcr.io/nvidia/k8s-device-plugin:v0.13.0
-$ docker tag nvcr.io/nvidia/k8s-device-plugin:v0.13.0 nvcr.io/nvidia/k8s-device-plugin:devel
+docker pull nvcr.io/nvidia/k8s-device-plugin:v0.13.0
+docker tag nvcr.io/nvidia/k8s-device-plugin:v0.13.0 nvcr.io/nvidia/k8s-device-plugin:devel
 ```
 
 Option 2, build without cloning the repository:
+
 ```shell
 $ docker build \
     -t nvcr.io/nvidia/k8s-device-plugin:devel \
@@ -862,6 +911,7 @@ $ docker build \
 ```
 
 Option 3, if you want to modify the code:
+
 ```shell
 $ git clone https://github.com/NVIDIA/k8s-device-plugin.git && cd k8s-device-plugin
 $ docker build \
@@ -871,7 +921,9 @@ $ docker build \
 ```
 
 #### Run
+
 Without compatibility for the `CPUManager` static policy:
+
 ```shell
 $ docker run \
     -it \
@@ -883,6 +935,7 @@ $ docker run \
 ```
 
 With compatibility for the `CPUManager` static policy:
+
 ```shell
 $ docker run \
     -it \
@@ -895,19 +948,23 @@ $ docker run \
 ### Without Docker
 
 #### Build
+
 ```shell
-$ C_INCLUDE_PATH=/usr/local/cuda/include LIBRARY_PATH=/usr/local/cuda/lib64 go build
+C_INCLUDE_PATH=/usr/local/cuda/include LIBRARY_PATH=/usr/local/cuda/lib64 go build
 ```
 
 #### Run
+
 Without compatibility for the `CPUManager` static policy:
+
 ```shell
-$ ./k8s-device-plugin
+./k8s-device-plugin
 ```
 
 With compatibility for the `CPUManager` static policy:
+
 ```shell
-$ ./k8s-device-plugin --pass-device-specs
+./k8s-device-plugin --pass-device-specs
 ```
 
 ## Changelog
@@ -1175,10 +1232,11 @@ $ ./k8s-device-plugin --pass-device-specs
 - Error messages were added
 
 ## Issues and Contributing
+
 [Checkout the Contributing document!](CONTRIBUTING.md)
 
-* You can report a bug by [filing a new issue](https://github.com/NVIDIA/k8s-device-plugin/issues/new)
-* You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
+- You can report a bug by [filing a new issue](https://github.com/NVIDIA/k8s-device-plugin/issues/new)
+- You can contribute by opening a [pull request](https://help.github.com/articles/using-pull-requests/)
 
 ### Versioning
 
