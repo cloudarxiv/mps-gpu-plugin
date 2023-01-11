@@ -136,6 +136,41 @@ func (d ReplicatedDeviceRef) String() string {
 	return string(d)
 }
 
+// UnmarshalJSON unmarshals raw bytes into a 'MPS' struct.
+func (s *MPS) UnmarshalJSON(b []byte) error {
+	ts := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &ts)
+	if err != nil {
+		return err
+	}
+
+	failRequestsGreaterThanOne, exists := ts["failRequestsGreaterThanOne"]
+	if !exists {
+		failRequestsGreaterThanOne = []byte(`false`)
+	}
+
+	err = json.Unmarshal(failRequestsGreaterThanOne, &s.FailRequestsGreaterThanOne)
+	if err != nil {
+		return err
+	}
+
+	resources, exists := ts["resources"]
+	if !exists {
+		return fmt.Errorf("no resources specified")
+	}
+
+	err = json.Unmarshal(resources, &s.Resources)
+	if err != nil {
+		return err
+	}
+
+	if len(s.Resources) == 0 {
+		return fmt.Errorf("no resources specified")
+	}
+
+	return nil
+}
+
 // UnmarshalJSON unmarshals raw bytes into a 'TimeSlicing' struct.
 func (s *TimeSlicing) UnmarshalJSON(b []byte) error {
 	ts := make(map[string]json.RawMessage)
@@ -227,6 +262,67 @@ func (s *ReplicatedResource) UnmarshalJSON(b []byte) error {
 
 	if s.Replicas < 2 {
 		return fmt.Errorf("number of replicas must be >= 2")
+	}
+
+	rename, exists := rr["rename"]
+	if !exists {
+		return nil
+	}
+
+	err = json.Unmarshal(rename, &s.Rename)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UnmarshalJSON unmarshals raw bytes into a 'MPSResource' struct.
+func (s *MPSResource) UnmarshalJSON(b []byte) error {
+	rr := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &rr)
+	if err != nil {
+		return err
+	}
+
+	name, exists := rr["name"]
+	if !exists {
+		return fmt.Errorf("no resource name specified")
+	}
+
+	err = json.Unmarshal(name, &s.Name)
+	if err != nil {
+		return err
+	}
+
+	devices, exists := rr["devices"]
+	if !exists {
+		return fmt.Errorf("no devices specified")
+	}
+
+	err = json.Unmarshal(devices, &s.Devices)
+	if err != nil {
+		return err
+	}
+
+	memoryGB, exists := rr["memoryGB"]
+	if !exists {
+		return fmt.Errorf("no memoryGB specified")
+	}
+
+	err = json.Unmarshal(memoryGB, &s.MemoryGB)
+	if err != nil {
+		return err
+	}
+
+	replicas, exists := rr["replicas"]
+	if !exists {
+		return fmt.Errorf("no replicas specified")
+	}
+
+	err = json.Unmarshal(replicas, &s.Replicas)
+	if err != nil {
+		return err
 	}
 
 	rename, exists := rr["rename"]

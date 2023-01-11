@@ -16,7 +16,7 @@ version: v1
 flags:
   migStrategy: none
 sharing:
-  MPS: 
+  mps: 
     failRequestsGreaterThanOne: true
     resources:
       - name: nvidia.com/gpu

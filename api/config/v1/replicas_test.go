@@ -464,3 +464,57 @@ func TestUnmarshalTimeSlicing(t *testing.T) {
 		})
 	}
 }
+
+func TestUnmarshalMPS(t *testing.T) {
+	testCases := []struct {
+		description string
+		input       string
+		output      MPS
+		err         bool
+	}{
+		{
+			description: "All fields with value",
+			input: `{
+				"failRequestsGreaterThanOne": true,
+				"resources": [
+					{
+						"name": "nvidia.com/gpu",
+						"rename": "nvidia.com/gpu-2gb",
+						"replicas": 3,
+						"memoryGB": 2,
+						"devices": ["id-0", "id-1"]
+					}
+				]
+			}`,
+			output: MPS{
+				FailRequestsGreaterThanOne: true,
+				Resources: []MPSResource{
+					{
+						Name:     "nvidia.com/gpu",
+						Rename:   "nvidia.com/gpu-2gb",
+						MemoryGB: 2,
+						Replicas: 3,
+						Devices: []ReplicatedDeviceRef{
+							"id-0",
+							"id-1",
+						},
+					},
+				},
+			},
+			err: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.description, func(t *testing.T) {
+			var output MPS
+			err := output.UnmarshalJSON([]byte(tc.input))
+			if tc.err {
+				require.Error(t, err)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tc.output, output)
+		})
+	}
+}
