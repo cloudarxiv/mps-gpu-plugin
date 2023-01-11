@@ -20,7 +20,7 @@
 #         migStrategy: mixed
 config:
   # ConfigMap name if pulling from an external ConfigMap
-  name: "n8s-device-plugin-configs"
+  name: "nos-device-plugin-configs"
   # If true, the ConfigMap containing the plugin configuration files will be created by the Chart, initialized
   # with an empty default configuration.
   # Otherwise, the Chart will use the existing ConfigMap with name .Values.config.name to exist.
@@ -76,7 +76,7 @@ securityContext: {}
 
 resources: {}
 nodeSelector:
-  n8s.nebuly.ai/gpu-partitioning: "mps"
+  nos.nebuly.ai/gpu-partitioning: "mps"
 affinity: {}
 tolerations:
   # This toleration is deprecated. Kept here for backward compatibility
