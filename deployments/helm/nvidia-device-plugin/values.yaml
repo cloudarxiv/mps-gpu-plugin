@@ -42,7 +42,6 @@ nvidiaDriverRoot: null
 gdsEnabled: null
 mofedEnabled: null
 
-nameOverride: ""
 fullnameOverride: ""
 namespaceOverride: ""
 selectorLabelsOverride: {}

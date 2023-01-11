@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "nvidia-device-plugin.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- .Chart.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
@@ -15,7 +15,7 @@ If release name contains chart name it will be used as a full name.
 {{- if .Values.fullnameOverride -}}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- $name := .Chart.Name -}}
 {{- if contains $name .Release.Name -}}
 {{- .Release.Name | trunc 63 | trimSuffix "-" -}}
 {{- else -}}
@@ -39,7 +39,7 @@ Allow the release namespace to be overridden for multi-namespace deployments in 
 Create chart name and version as used by the chart label.
 */}}
 {{- define "nvidia-device-plugin.chart" -}}
-{{- $name := default .Chart.Name .Values.nameOverride -}}
+{{- $name := .Chart.Name -}}
 {{- printf "%s-%s" $name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
