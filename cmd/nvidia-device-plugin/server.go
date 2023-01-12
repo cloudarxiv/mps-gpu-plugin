@@ -271,9 +271,13 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		response := pluginapi.ContainerAllocateResponse{}
 
 		ids := req.DevicesIDs
-		deviceIDs := plugin.deviceIDsFromAnnotatedDeviceIDs(ids)
 		mpsDevices := plugin.getMPSDevices()
-		requestedMPSDevices := mpsDevices.Subset(deviceIDs)
+		requestedMPSDevices := mpsDevices.Subset(ids)
+		deviceIDs := plugin.deviceIDsFromAnnotatedDeviceIDs(ids)
+
+		log.Printf("ids: %+v", ids)
+		log.Printf("mpsDevices: %+v", mpsDevices)
+		log.Printf("requestedMpsDevices: %+v", requestedMPSDevices)
 
 		// If the devices being allocated are replicas, then (conditionally)
 		// error out if more than one resource is being allocated.
@@ -304,7 +308,7 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		}
 
 		// Configure MPS devices
-		log.Printf("configuring requested MPS devices: %+v", requestedMPSDevices) // todo: remove me
+		log.Printf("configuring requested MPS devices: %+v", requestedMPSDevices)
 		if response.Mounts == nil {
 			response.Mounts = make([]*pluginapi.Mount, 0)
 		}
@@ -313,7 +317,8 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		}
 		memLimits := make([]string, 0)
 		for _, mpsDevice := range requestedMPSDevices {
-			memLimits = append(memLimits, fmt.Sprintf("%s:%dG", mpsDevice.Index, mpsDevice.MemoryGB))
+			limit := fmt.Sprintf("%s:%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetMemoryGB())
+			memLimits = append(memLimits, limit)
 		}
 		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimits, ",")
 		response.Envs["CUDA_MPS_PIPE_DIRECTORY"] = "/tmp/nvidia-mps"
@@ -390,30 +395,33 @@ func (plugin *NvidiaDevicePlugin) getMPSDevices() MPSDeviceList {
 		return res
 	}
 
+	// Lookup table: keep track of MPS ids without annotations
+	var mpsIDs = make(map[string]struct{})
 	for _, r := range plugin.config.Sharing.MPS.Resources {
 		for _, ref := range r.Devices {
 			if ref.IsGPUIndex() {
 				device := plugin.rm.Devices().GetByIndex(ref.String())
 				if device != nil {
-					mpsDevice := MPSDevice{
-						MemoryGB: r.MemoryGB,
-						DeviceID: rm.AnnotatedID(device.ID).GetID(),
-						Index:    device.Index,
-					}
-					res = append(res, mpsDevice)
+					// use ID without annotation
+					id := rm.MPSAnnotatedID(device.GetID()).GetID()
+					mpsIDs[id] = struct{}{}
 				}
 			}
 			if ref.IsUUID() {
-				device := plugin.rm.Devices().GetByID(rm.AnnotatedID(ref.String()).String())
-				if device != nil {
-					mpsDevice := MPSDevice{
-						MemoryGB: r.MemoryGB,
-						DeviceID: ref.String(),
-						Index:    device.Index,
-					}
-					res = append(res, mpsDevice)
-				}
+				mpsIDs[ref.String()] = struct{}{}
 			}
+		}
+	}
+
+	// Iterate over plugin devices and extract the MPS devices defined in config
+	for _, d := range plugin.rm.Devices() {
+		annotatedId := rm.MPSAnnotatedID(d.GetID())
+		if _, ok := mpsIDs[annotatedId.GetID()]; ok {
+			mpsDevice := MPSDevice{
+				Index:       d.Index,
+				AnnotatedID: annotatedId,
+			}
+			res = append(res, mpsDevice)
 		}
 	}
 

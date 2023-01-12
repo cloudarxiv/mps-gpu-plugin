@@ -59,7 +59,7 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 Template labels
 */}}
 {{- define "nvidia-device-plugin.templateLabels" -}}
-app.kubernetes.io/name: {{ include "nvidia-device-plugin.name" . }}
+app.kubernetes.io/name: nebuly-{{ include "nvidia-device-plugin.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- if .Values.selectorLabelsOverride }}
 {{ toYaml .Values.selectorLabelsOverride }}

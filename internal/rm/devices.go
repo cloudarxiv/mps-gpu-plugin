@@ -238,3 +238,37 @@ func (rs AnnotatedIDs) GetIDs() []string {
 	}
 	return res
 }
+
+type MPSAnnotatedID string
+
+// Split splits a MPSAnnotatedID into its ID, its memory GB, and replica number parts.
+func (r MPSAnnotatedID) Split() (string, int, int) {
+	split := strings.SplitN(string(r), "::", 3)
+	if len(split) != 3 {
+		return string(r), 0, 0
+	}
+	memoryGB, _ := strconv.Atoi(split[1])
+	replica, _ := strconv.Atoi(split[2])
+	return split[0], memoryGB, replica
+}
+
+// GetMemoryGB returns just the memoryGB part of the MPS ID
+func (r MPSAnnotatedID) GetMemoryGB() int {
+	_, memoryGB, _ := r.Split()
+	return memoryGB
+}
+
+// GetID returns just the ID part of the replicated ID
+func (r MPSAnnotatedID) GetID() string {
+	id, _, _ := r.Split()
+	return id
+}
+
+func (r MPSAnnotatedID) String() string {
+	return string(r)
+}
+
+// NewMPSAnnotatedID creates a new AnnotatedID from an ID, a replica number the memory of an MPS resource.
+func NewMPSAnnotatedID(id string, memoryGB int, replica int) MPSAnnotatedID {
+	return MPSAnnotatedID(fmt.Sprintf("%s::%d::%d", id, memoryGB, replica))
+}

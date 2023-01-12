@@ -378,7 +378,7 @@ func addMPSReplicas(config *spec.Config, deviceMap DeviceMap) (DeviceMap, error)
 		// Add replicated devices with annotated IDs
 		for _, id := range ids {
 			for i := 0; i < r.Replicas; i++ {
-				annotatedID := NewAnnotatedID(id, i).String()
+				annotatedID := NewMPSAnnotatedID(id, r.MemoryGB, i).String()
 				replicatedDevice := *(deviceMap[r.Name][id])
 				replicatedDevice.ID = annotatedID
 				result.insert(name, &replicatedDevice)

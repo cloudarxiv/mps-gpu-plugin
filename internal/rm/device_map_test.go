@@ -193,18 +193,18 @@ func TestAddMPSReplicas(t *testing.T) {
 			expectedErr: false,
 			expectedDeviceMap: map[spec.ResourceName]Devices{
 				"nvidia.com/gpu": {
-					NewAnnotatedID(mockedUUIDOne, 0).String(): &Device{
+					NewMPSAnnotatedID(mockedUUIDOne, 20, 0).String(): &Device{
 						Device: pluginapi.Device{
-							ID:       NewAnnotatedID(mockedUUIDOne, 0).String(),
+							ID:       NewMPSAnnotatedID(mockedUUIDOne, 20, 0).String(),
 							Health:   "",
 							Topology: nil,
 						},
 						Paths: []string{},
 						Index: "0",
 					},
-					NewAnnotatedID(mockedUUIDOne, 1).String(): &Device{
+					NewMPSAnnotatedID(mockedUUIDOne, 20, 1).String(): &Device{
 						Device: pluginapi.Device{
-							ID:       NewAnnotatedID(mockedUUIDOne, 1).String(),
+							ID:       NewMPSAnnotatedID(mockedUUIDOne, 20, 1).String(),
 							Health:   "",
 							Topology: nil,
 						},
