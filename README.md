@@ -39,10 +39,36 @@ mode to `EXCLUSIVE_PROCESS`.
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
 
 ```bash
-helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin --version 0.13.0 --generate-name -n nebuly-nvidia --create-namespace
+helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin \
+  --version 0.13.0 \
+  --generate-name \
+  -n nebuly-nvidia \
+  --create-namespace
 ```
 
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
+
+### Installation alongside the NVIDIA device plugin
+You can choose to install this plugin alongside the original NVIDIA Device Plugin, 
+but only run it on certain nodes by setting affinity or node selector rules. When you do that, it is important to ensure 
+that only one of the two plugins is running on a node at a time.
+
+For example, this plugin runs on all nodes labelled with `nos.nebuly.ai/gpu-partitioning=mps` by default. 
+If you have an existing installation of the original NVIDIA Device Plugin and want to prevent it 
+from running on nodes with that label, you can upgrade its Helm release by adding the following patch 
+to its `values.yaml`:
+
+```yaml
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: nos.nebuly.ai/gpu-partitioning
+              operator: NotIn
+              values:
+                - mps
+```
 
 ## Table of Contents
 

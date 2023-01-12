@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2019, NVIDIA CORPORATION.  All rights reserved.
+ * Copyright 2023 Nebuly.ai.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -274,10 +275,6 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		mpsDevices := plugin.getMPSDevices()
 		requestedMPSDevices := mpsDevices.Subset(ids)
 		deviceIDs := plugin.deviceIDsFromAnnotatedDeviceIDs(ids)
-
-		log.Printf("ids: %+v", ids)
-		log.Printf("mpsDevices: %+v", mpsDevices)
-		log.Printf("requestedMpsDevices: %+v", requestedMPSDevices)
 
 		// If the devices being allocated are replicas, then (conditionally)
 		// error out if more than one resource is being allocated.
