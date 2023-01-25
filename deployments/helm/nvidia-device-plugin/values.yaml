@@ -75,7 +75,7 @@ securityContext: {}
 
 resources: {}
 nodeSelector:
-  nos.nebuly.ai/gpu-partitioning: "mps"
+  nos.nebuly.com/gpu-partitioning: "mps"
 affinity: {}
 tolerations:
   # This toleration is deprecated. Kept here for backward compatibility

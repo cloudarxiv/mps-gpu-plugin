@@ -53,7 +53,7 @@ You can choose to install this plugin alongside the original NVIDIA Device Plugi
 but only run it on certain nodes by setting affinity or node selector rules. When you do that, it is important to ensure 
 that only one of the two plugins is running on a node at a time.
 
-For example, this plugin runs on all nodes labelled with `nos.nebuly.ai/gpu-partitioning=mps` by default. 
+For example, this plugin runs on all nodes labelled with `nos.nebuly.com/gpu-partitioning=mps` by default. 
 If you have an existing installation of the original NVIDIA Device Plugin and want to prevent it 
 from running on nodes with that label, you can upgrade its Helm release by adding the following patch 
 to its `values.yaml`:
@@ -64,7 +64,7 @@ affinity:
     requiredDuringSchedulingIgnoredDuringExecution:
       nodeSelectorTerms:
         - matchExpressions:
-            - key: nos.nebuly.ai/gpu-partitioning
+            - key: nos.nebuly.com/gpu-partitioning
               operator: NotIn
               values:
                 - mps
