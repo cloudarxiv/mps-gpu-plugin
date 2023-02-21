@@ -1,6 +1,7 @@
 # NVIDIA device plugin for Kubernetes
 
-This our forked version of the NVIDIA device plugin for Kubernetes.
+This is a forked version of the NVIDIA device plugin for Kubernetes,
+a component of the [Dynamic GPU Partitioner](https://github.com/nebuly-ai/nos) of the open source `nos`.
 
 We have made some changes to the original version to make it support GPU sharing through
 NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing
@@ -34,6 +35,18 @@ We also changed the installation Helm chart so that MPS sharing can be enabled o
 When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU
 mode to `EXCLUSIVE_PROCESS`.
 
+This forked plugin is a component of `[nos](https://github.com/nebuly-ai/nos)`, the open-source module to efficiently run
+AI workloads on Kubernetes, increasing GPU utilization, cutting down infrastructure costs and improving workloads performance.
+
+Currently, nos has two main features:
+
+- [Dynamic GPU partitioning](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/overview): allow to schedule Pods requesting
+fractions of GPU. GPU partitioning is performed automatically in real-time based on the Pods pending and running in the cluster,
+so that Pods can request only the resources that are strictly necessary and GPUs are always fully utilized.
+- [Elastic Resource Quota management](https://docs.nebuly.com/nos/elastic-resource-quota/overview): increase the number of
+Pods running on the cluster by allowing namespaces to borrow quotas of reserved resources from other namespaces as long as they
+are not using them.
+
 ## Installation
 
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
@@ -49,13 +62,14 @@ helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin \
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
 
 ### Installation alongside the NVIDIA device plugin
-You can choose to install this plugin alongside the original NVIDIA Device Plugin, 
-but only run it on certain nodes by setting affinity or node selector rules. When you do that, it is important to ensure 
+
+You can choose to install this plugin alongside the original NVIDIA Device Plugin,
+but only run it on certain nodes by setting affinity or node selector rules. When you do that, it is important to ensure
 that only one of the two plugins is running on a node at a time.
 
-For example, this plugin runs on all nodes labelled with `nos.nebuly.com/gpu-partitioning=mps` by default. 
-If you have an existing installation of the original NVIDIA Device Plugin and want to prevent it 
-from running on nodes with that label, you can upgrade its Helm release by adding the following patch 
+For example, this plugin runs on all nodes labelled with `nos.nebuly.com/gpu-partitioning=mps` by default.
+If you have an existing installation of the original NVIDIA Device Plugin and want to prevent it
+from running on nodes with that label, you can upgrade its Helm release by adding the following patch
 to its `values.yaml`:
 
 ```yaml
