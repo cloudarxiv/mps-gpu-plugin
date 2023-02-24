@@ -1,7 +1,7 @@
 # NVIDIA device plugin for Kubernetes
 
 This is a forked version of the NVIDIA device plugin for Kubernetes,
-a component of the [Dynamic GPU Partitioner](https://github.com/nebuly-ai/nos) of the open source `nos`.
+a component of the [Dynamic GPU Partitioner](https://github.com/nebuly-ai/nos) of the open source [`nos`](https://github.com/nebuly-ai/nos).
 
 We have made some changes to the original version to make it support GPU sharing through
 NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing
@@ -35,7 +35,7 @@ We also changed the installation Helm chart so that MPS sharing can be enabled o
 When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU
 mode to `EXCLUSIVE_PROCESS`.
 
-This forked plugin is a component of `[nos](https://github.com/nebuly-ai/nos)`, the open-source module to efficiently run
+This forked plugin is a component of [`nos`](https://github.com/nebuly-ai/nos), the open-source module to efficiently run
 AI workloads on Kubernetes, increasing GPU utilization, cutting down infrastructure costs and improving workloads performance.
 
 Currently, nos has two main features:
