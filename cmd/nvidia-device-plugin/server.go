@@ -314,7 +314,7 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		}
 		memLimits := make([]string, 0)
 		for _, mpsDevice := range requestedMPSDevices {
-			limit := fmt.Sprintf("%s:%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetMemoryGB())
+			limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetMemoryGB())
 			memLimits = append(memLimits, limit)
 		}
 		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimits, ",")
