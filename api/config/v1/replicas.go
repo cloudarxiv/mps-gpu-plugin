@@ -34,11 +34,12 @@ type MPS struct {
 
 // MPSResource represents a resource to be replicated (e.g. sliced) through MPS
 type MPSResource struct {
-	Name     ResourceName          `json:"name" yaml:"name"`
-	Rename   ResourceName          `json:"rename,omitempty" yaml:"rename,omitempty"`
-	MemoryGB int                   `json:"memoryGB" yaml:"memoryGB"`
-	Replicas int                   `json:"replicas" yaml:"replicas"`
-	Devices  []ReplicatedDeviceRef `json:"devices" yaml:"devices,flow"`
+	Name      ResourceName          `json:"name" yaml:"name"`
+	Rename    ResourceName          `json:"rename,omitempty" yaml:"rename,omitempty"`
+	partition int                   `json:"partition" yaml:"partition"`
+	rtype     string                `json:"rtype" yaml:"rtype"`
+	Replicas  int                   `json:"replicas" yaml:"replicas"`
+	Devices   []ReplicatedDeviceRef `json:"devices" yaml:"devices,flow"`
 }
 
 // TimeSlicing defines the set of replicas to be made for timeSlicing available resources.
@@ -302,12 +303,22 @@ func (s *MPSResource) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	memoryGB, exists := rr["memoryGB"]
+	partition, exists := rr["partition"]
 	if !exists {
-		return fmt.Errorf("no memoryGB specified")
+		return fmt.Errorf("no partition specified")
 	}
 
-	err = json.Unmarshal(memoryGB, &s.MemoryGB)
+	rtype, exists := rr["rtype"]
+	if !exists {
+		return fmt.Errorf("no rtype specified")
+	}
+
+	err = json.Unmarshal(partition, &s.partition)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(rtype, &s.rtype)
 	if err != nil {
 		return err
 	}

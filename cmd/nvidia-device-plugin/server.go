@@ -312,6 +312,7 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		if response.Envs == nil {
 			response.Envs = make(map[string]string)
 		}
+
 		memLimits := make([]string, 0)
 		for _, mpsDevice := range requestedMPSDevices {
 			limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetMemoryGB())

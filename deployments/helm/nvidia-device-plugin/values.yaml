@@ -20,13 +20,33 @@
 #         migStrategy: mixed
 config:
   # ConfigMap name if pulling from an external ConfigMap
-  name: "nos-device-plugin-configs"
+  name: ""
   # If true, the ConfigMap containing the plugin configuration files will be created by the Chart, initialized
   # with an empty default configuration.
   # Otherwise, the Chart will use the existing ConfigMap with name .Values.config.name to exist.
   create: true
   # Set of named configs to build an integrated ConfigMap from
-  map: {}
+  map: 
+    default: |-
+      version: v1
+      flags:
+        migStrategy: none
+      sharing:
+        mps: 
+          failRequestsGreaterThanOne: false
+          resources:
+            - name: nvidia.com/gpu
+              rename: nvidia.com/vcore
+              partition: 1
+              replicas: 100
+              devices: ["0"]
+              rtype: vcore
+            - name: nvidia.com/gpu
+              rename: nvidia.com/vmem
+              partition: 1
+              replicas: 16
+              devices: ["0"]
+              rtype: vmem
   # Default config name within the ConfigMap
   default: ""
   # List of fallback strategies to attempt if no config is selected and no default is provided
@@ -50,10 +70,10 @@ allowDefaultNamespace: false
 
 imagePullSecrets: []
 image:
-  repository: ghcr.io/nebuly-ai/k8s-device-plugin
+  repository: xzaviourr/k8s-device-plugin
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "v5"
 
 mps:
   enabled: true

@@ -20,7 +20,8 @@ package rm
 import (
 	"fmt"
 
-	spec "github.com/NVIDIA/k8s-device-plugin/api/config/v1"
+	spec "../../api/config/v1"
+
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvlib/device"
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvml"
 )
@@ -379,7 +380,7 @@ func addMPSReplicas(config *spec.Config, deviceMap DeviceMap) (DeviceMap, error)
 		// Add replicated devices with annotated IDs
 		for _, id := range ids {
 			for i := 0; i < r.Replicas; i++ {
-				annotatedID := NewMPSAnnotatedID(id, r.MemoryGB, i).String()
+				annotatedID := NewMPSAnnotatedID(id, r.partition, i, r.rtype).String()
 				replicatedDevice := *(deviceMap[r.Name][id])
 				replicatedDevice.ID = annotatedID
 				result.insert(name, &replicatedDevice)
