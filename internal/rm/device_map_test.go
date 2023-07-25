@@ -20,8 +20,8 @@ package rm
 import (
 	"testing"
 
-	spec "github.com/NVIDIA/k8s-device-plugin/api/config/v1"
 	"github.com/stretchr/testify/require"
+	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 
@@ -168,10 +168,11 @@ func TestAddMPSReplicas(t *testing.T) {
 					MPS: spec.MPS{
 						Resources: []spec.MPSResource{
 							{
-								Name:     "nvidia.com/gpu",
-								MemoryGB: 20,
-								Replicas: 2,
-								Devices:  []spec.ReplicatedDeviceRef{mockedUUIDOne},
+								Name:      "nvidia.com/gpu",
+								Partition: 20,
+								Replicas:  2,
+								Rtype:     "vcore",
+								Devices:   []spec.ReplicatedDeviceRef{mockedUUIDOne},
 							},
 						},
 					},
@@ -194,18 +195,18 @@ func TestAddMPSReplicas(t *testing.T) {
 			expectedErr: false,
 			expectedDeviceMap: map[spec.ResourceName]Devices{
 				"nvidia.com/gpu": {
-					NewMPSAnnotatedID(mockedUUIDOne, 20, 0).String(): &Device{
+					NewMPSAnnotatedID(mockedUUIDOne, 20, 0, "vcore").String(): &Device{
 						Device: pluginapi.Device{
-							ID:       NewMPSAnnotatedID(mockedUUIDOne, 20, 0).String(),
+							ID:       NewMPSAnnotatedID(mockedUUIDOne, 20, 0, "vcore").String(),
 							Health:   "",
 							Topology: nil,
 						},
 						Paths: []string{},
 						Index: "0",
 					},
-					NewMPSAnnotatedID(mockedUUIDOne, 20, 1).String(): &Device{
+					NewMPSAnnotatedID(mockedUUIDOne, 20, 1, "vcore").String(): &Device{
 						Device: pluginapi.Device{
-							ID:       NewMPSAnnotatedID(mockedUUIDOne, 20, 1).String(),
+							ID:       NewMPSAnnotatedID(mockedUUIDOne, 20, 1, "vcore").String(),
 							Health:   "",
 							Topology: nil,
 						},

@@ -36,8 +36,8 @@ type MPS struct {
 type MPSResource struct {
 	Name      ResourceName          `json:"name" yaml:"name"`
 	Rename    ResourceName          `json:"rename,omitempty" yaml:"rename,omitempty"`
-	partition int                   `json:"partition" yaml:"partition"`
-	rtype     string                `json:"rtype" yaml:"rtype"`
+	Partition int                   `json:"partition" yaml:"partition"`
+	Rtype     string                `json:"rtype" yaml:"rtype"`
 	Replicas  int                   `json:"replicas" yaml:"replicas"`
 	Devices   []ReplicatedDeviceRef `json:"devices" yaml:"devices,flow"`
 }
@@ -313,12 +313,12 @@ func (s *MPSResource) UnmarshalJSON(b []byte) error {
 		return fmt.Errorf("no rtype specified")
 	}
 
-	err = json.Unmarshal(partition, &s.partition)
+	err = json.Unmarshal(partition, &s.Partition)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(rtype, &s.rtype)
+	err = json.Unmarshal(rtype, &s.Rtype)
 	if err != nil {
 		return err
 	}

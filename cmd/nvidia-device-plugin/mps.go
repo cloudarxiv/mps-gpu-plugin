@@ -1,6 +1,6 @@
 package main
 
-import "github.com/NVIDIA/k8s-device-plugin/internal/rm"
+import "github.com/xzaviourr/k8s-device-plugin/internal/rm"
 
 type MPSDevice struct {
 	AnnotatedID rm.MPSAnnotatedID

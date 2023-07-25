@@ -17,8 +17,9 @@
 package rm
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMPSAnnotatedID__Split(t *testing.T) {
@@ -35,7 +36,7 @@ func TestMPSAnnotatedID__Split(t *testing.T) {
 	}{
 		{
 			name: "Annotated MPS ID with memory and replicas",
-			id:   NewMPSAnnotatedID("id-1", 10, 2),
+			id:   NewMPSAnnotatedID("id-1", 10, 2, "vcore"),
 			expectedParts: splitParts{
 				first:  "id-1",
 				second: 10,
@@ -64,7 +65,7 @@ func TestMPSAnnotatedID__Split(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			first, second, third := tc.id.Split()
+			first, second, third, _ := tc.id.Split()
 			require.Equal(t, tc.expectedParts.first, first)
 			require.Equal(t, tc.expectedParts.second, second)
 			require.Equal(t, tc.expectedParts.third, third)

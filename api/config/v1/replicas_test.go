@@ -496,10 +496,11 @@ func TestUnmarshalMPS(t *testing.T) {
 				FailRequestsGreaterThanOne: true,
 				Resources: []MPSResource{
 					{
-						Name:     "nvidia.com/gpu",
-						Rename:   "nvidia.com/gpu-2gb",
-						MemoryGB: 2,
-						Replicas: 3,
+						Name:      "nvidia.com/gpu",
+						Rename:    "nvidia.com/gpu-2gb",
+						Partition: 2,
+						Replicas:  3,
+						Rtype:     "vcore",
 						Devices: []ReplicatedDeviceRef{
 							"id-0",
 							"id-1",

@@ -21,7 +21,7 @@ import (
 	"log"
 	"os"
 
-	spec "github.com/NVIDIA/k8s-device-plugin/api/config/v1"
+	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvml"
 )
 

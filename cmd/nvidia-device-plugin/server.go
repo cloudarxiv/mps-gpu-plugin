@@ -27,8 +27,8 @@ import (
 	"strings"
 	"time"
 
-	spec "github.com/NVIDIA/k8s-device-plugin/api/config/v1"
-	"github.com/NVIDIA/k8s-device-plugin/internal/rm"
+	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
+	"github.com/xzaviourr/k8s-device-plugin/internal/rm"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
@@ -315,7 +315,7 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 
 		memLimits := make([]string, 0)
 		for _, mpsDevice := range requestedMPSDevices {
-			limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetMemoryGB())
+			limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetPartition())
 			memLimits = append(memLimits, limit)
 		}
 		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimits, ",")

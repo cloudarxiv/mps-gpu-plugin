@@ -256,7 +256,7 @@ func (r MPSAnnotatedID) Split() (string, int, int, string) {
 }
 
 // GetMemoryGB returns just the memoryGB part of the MPS ID
-func (r MPSAnnotatedID) GetMemoryGB() int {
+func (r MPSAnnotatedID) GetPartition() int {
 	_, partition, _, _ := r.Split()
 	return partition
 }

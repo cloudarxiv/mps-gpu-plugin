@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/NVIDIA/k8s-device-plugin/internal/rm"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/xzaviourr/k8s-device-plugin/internal/rm"
 )
 
 func TestMPSDeviceList_Subset(t *testing.T) {
@@ -32,29 +33,29 @@ func TestMPSDeviceList_Subset(t *testing.T) {
 			description: "subset should return only MPSDevices with provided IDs",
 			list: MPSDeviceList{
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0, "vcore"),
 					Index:       "1",
 				},
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-2", 2, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-2", 2, 0, "vcore"),
 					Index:       "2",
 				},
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-3", 3, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-3", 3, 0, "vcore"),
 					Index:       "3",
 				},
 			},
 			ids: []string{
-				rm.NewMPSAnnotatedID("id-1", 1, 0).String(),
-				rm.NewMPSAnnotatedID("id-2", 2, 0).String(),
+				rm.NewMPSAnnotatedID("id-1", 1, 0, "vcore").String(),
+				rm.NewMPSAnnotatedID("id-2", 2, 0, "vcore").String(),
 			},
 			expected: MPSDeviceList{
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0, "vcore"),
 					Index:       "1",
 				},
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-2", 2, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-2", 2, 0, "vcore"),
 					Index:       "2",
 				},
 			},
@@ -63,25 +64,25 @@ func TestMPSDeviceList_Subset(t *testing.T) {
 			description: "subset should consider only annotated IDs",
 			list: MPSDeviceList{
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0, "vcore"),
 					Index:       "1",
 				},
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-2", 2, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-2", 2, 0, "vcore"),
 					Index:       "2",
 				},
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-3", 3, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-3", 3, 0, "vcore"),
 					Index:       "3",
 				},
 			},
 			ids: []string{
-				rm.NewMPSAnnotatedID("id-1", 1, 0).String(),
+				rm.NewMPSAnnotatedID("id-1", 1, 0, "vcore").String(),
 				"id-2",
 			},
 			expected: MPSDeviceList{
 				{
-					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0),
+					AnnotatedID: rm.NewMPSAnnotatedID("id-1", 1, 0, "vcore"),
 					Index:       "1",
 				},
 			},
