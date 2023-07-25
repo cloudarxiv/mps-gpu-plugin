@@ -13,6 +13,8 @@ spec:
     imagePullPolicy: Never
     resources:
       requests:
-        nvidia.com/vmem: 3
+        nvidia.com/vcore: 20
+        nvidia.com/vmem: 2
       limits:         
-        nvidia.com/vmem: 3
+        nvidia.com/vcore: 20
+        nvidia.com/vmem: 2

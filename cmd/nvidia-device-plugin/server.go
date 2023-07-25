@@ -24,6 +24,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -313,12 +314,27 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 			response.Envs = make(map[string]string)
 		}
 
-		memLimits := make([]string, 0)
+		// memLimits := make([]string, 0)
+		memory_devices := 0
+		compute_devices := 0
 		for _, mpsDevice := range requestedMPSDevices {
-			limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetPartition())
-			memLimits = append(memLimits, limit)
+			if mpsDevice.AnnotatedID.GetRType() == "vmem" {
+				memory_devices += 1
+			} else {
+				compute_devices += 1
+			}
+			// limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetPartition())
+			// memLimits = append(memLimits, limit)
 		}
-		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimits, ",")
+
+		memory_limit := "0=" + strconv.Itoa(memory_devices) + "G"
+		compute_limit := strconv.Itoa(compute_devices * 100 / 16)
+		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = memory_limit
+		response.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = compute_limit
+		log.Printf("Memory Limit : %s", memory_limit)
+		log.Printf("Compute Limit : %s", compute_limit)
+
+		// response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = strings.Join(memLimits, ",")
 		response.Envs["CUDA_MPS_PIPE_DIRECTORY"] = "/tmp/nvidia-mps"
 		mount := pluginapi.Mount{
 			ContainerPath: "/tmp/nvidia-mps",
