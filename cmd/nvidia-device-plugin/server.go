@@ -306,7 +306,11 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		}
 
 		// Configure MPS devices
+		log.Printf("All MPS devices: %+v", mpsDevices)
+		log.Printf("configuring total device IDs: %+v", ids)
 		log.Printf("configuring requested MPS devices: %+v", requestedMPSDevices)
+		log.Printf("deviceIDs: %+v", deviceIDs)
+
 		if response.Mounts == nil {
 			response.Mounts = make([]*pluginapi.Mount, 0)
 		}
@@ -318,19 +322,24 @@ func (plugin *NvidiaDevicePlugin) Allocate(ctx context.Context, reqs *pluginapi.
 		memory_devices := 0
 		compute_devices := 0
 		for _, mpsDevice := range requestedMPSDevices {
+			log.Printf("RType of resource : %s", mpsDevice.AnnotatedID.GetRType())
 			if mpsDevice.AnnotatedID.GetRType() == "vmem" {
-				memory_devices += 1
-			} else {
-				compute_devices += 1
+				memory_devices = memory_devices + 1
+			} else if mpsDevice.AnnotatedID.GetRType() == "vcore" {
+				compute_devices = compute_devices + 1
 			}
 			// limit := fmt.Sprintf("%s=%dG", mpsDevice.Index, mpsDevice.AnnotatedID.GetPartition())
 			// memLimits = append(memLimits, limit)
 		}
 
 		memory_limit := "0=" + strconv.Itoa(memory_devices) + "G"
-		compute_limit := strconv.Itoa(compute_devices * 100 / 16)
-		response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = memory_limit
-		response.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = compute_limit
+		compute_limit := strconv.Itoa(compute_devices)
+		if memory_devices > 0 {
+			response.Envs["CUDA_MPS_PINNED_DEVICE_MEM_LIMIT"] = memory_limit
+		}
+		if compute_devices > 0 {
+			response.Envs["CUDA_MPS_ACTIVE_THREAD_PERCENTAGE"] = compute_limit
+		}
 		log.Printf("Memory Limit : %s", memory_limit)
 		log.Printf("Compute Limit : %s", compute_limit)
 

@@ -14,7 +14,7 @@ spec:
     resources:
       requests:
         nvidia.com/vcore: 20
-        nvidia.com/vmem: 2
+        nvidia.com/vmem: 4
       limits:         
         nvidia.com/vcore: 20
-        nvidia.com/vmem: 2
+        nvidia.com/vmem: 4

@@ -246,7 +246,7 @@ type MPSAnnotatedID string
 func (r MPSAnnotatedID) Split() (string, int, int, string) {
 	println("MPS Annotated ID : %s", r)
 	split := strings.SplitN(string(r), "::", 4)
-	if len(split) != 34 {
+	if len(split) != 4 {
 		return string(r), 0, 0, ""
 	}
 	partition, _ := strconv.Atoi(split[1])

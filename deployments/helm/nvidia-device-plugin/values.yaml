@@ -73,7 +73,7 @@ image:
   repository: xzaviourr/k8s-device-plugin
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v6"
+  tag: "v13"
 
 mps:
   enabled: true
