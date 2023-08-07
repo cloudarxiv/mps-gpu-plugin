@@ -170,7 +170,7 @@ DOCKER_REGISTRY ?= ghcr.io/nebuly-ai
 
 .PHONY: neb-docker-build-plugin
 neb-docker-build-plugin:
-	sudo docker build -t xzaviourr/k8s-device-plugin:v13 -f deployments/container/Dockerfile.ubuntu .
+	sudo docker build -t synergcseiitb/k8s-mps-device-plugin:v1 -f deployments/container/Dockerfile.ubuntu .
 
 .PHONY: neb-docker-build-mps-server
 neb-docker-build-mps-server:
@@ -178,8 +178,9 @@ neb-docker-build-mps-server:
 
 .PHONY: neb-docker-push-plugin
 neb-docker-push-plugin:
-	sudo docker save -o k8s-device-plugin:v13.tar xzaviourr/k8s-device-plugin:v13
-	sudo docker load -i k8s-device-plugin:v13.tar
+	sudo docker save -o k8s-mps-device-plugin:v1.tar synergcseiitb/k8s-mps-device-plugin:v1
+	sudo docker load -i k8s-mps-device-plugin:v1.tar
+	sudo docker push synergcseiitb/k8s-mps-device-plugin:v1
 
 .PHONY: neb-docker-push-mps-server
 neb-docker-push-mps-server:

@@ -41,9 +41,10 @@ config:
               replicas: 100
               devices: ["0"]
               rtype: vcore
+              
             - name: nvidia.com/gpu
               rename: nvidia.com/vmem
-              partition: 1
+              partition: 1024
               replicas: 16
               devices: ["0"]
               rtype: vmem

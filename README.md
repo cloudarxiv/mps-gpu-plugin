@@ -1,51 +1,59 @@
 # NVIDIA device plugin for Kubernetes
 
-This is a forked version of the NVIDIA device plugin for Kubernetes,
-a component of the [Dynamic GPU Partitioner](https://github.com/nebuly-ai/nos) of the open source [`nos`](https://github.com/nebuly-ai/nos), a module to maximize the utilization of GPU resources in a Kubernetes cluster and cut infrastructure costs.
+This is a forked version of the NVIDIA device plugin for Kubernetes. We have made some changes to the original version to make it support GPU sharing through NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing of a GPU among multiple processes with memory and compute resource limits.
 
-We have made some changes to the original version to make it support GPU sharing through
-NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing
-of a GPU among multiple processes with memory and compute resources limits.
-
-Specifically, we extended the plugin `sharing` configuration with the field `MPS`, which allows to specify which GPUs
-to share through MPS, in a similar way to the time-slicing sharing configuration. You can find a sample configuration
-below, which exposes to Kubernetes the GPU with index `0` as two GPU slices (named `nvidia.com/gpu-2gb`) with 2GB of
-memory each.
+Before deploying the plugin, user needs to specify the device configurations that he needs to broadcast as helm configuration (in values.yaml file). One of the example configuration is - 
 
 ```yaml
-version: v1
-flags:
-  migStrategy: none
-sharing:
-  mps: 
-    failRequestsGreaterThanOne: true
-    resources:
-      - name: nvidia.com/gpu
-        rename: nvidia.com/gpu-2gb
-        memoryGB: 2
-        replicas: 2
-        devices: ["0"]
+config:
+  # ConfigMap name if pulling from an external ConfigMap
+  name: ""
+  # If true, the ConfigMap containing the plugin configuration files will be created by the Chart, initialized
+  # with an empty default configuration.
+  # Otherwise, the Chart will use the existing ConfigMap with name .Values.config.name to exist.
+  create: true
+  # Set of named configs to build an integrated ConfigMap from
+  map: 
+    default: |-
+      version: v1
+      flags:
+        migStrategy: none
+      sharing:
+        mps: 
+          failRequestsGreaterThanOne: false
+          resources:
+            - name: nvidia.com/gpu
+              rename: nvidia.com/vcore
+              partition: 1
+              replicas: 100
+              devices: ["0"]
+              rtype: vcore
+            - name: nvidia.com/gpu
+              rename: nvidia.com/vmem
+              partition: 1024
+              replicas: 16
+              devices: ["0"]
+              rtype: vmem
+  # Default config name within the ConfigMap
+  default: ""
+  # List of fallback strategies to attempt if no config is selected and no default is provided
+  fallbackStrategies: ["named" , "single"]
 ```
+This configuration broadcasts GPU device 0 as two separate types of devices -
+- **vcore**: This represents compute power of the GPU. Partition value signifies the thread percentage denoted by 1 device. Replica count displays total number of virtual devices to broadcast. So above configuration will broadcast 100 devices all corresponding to 1 percent of threads. Different configurations can be achieved by varying the number of replicas.
+  - Setting replicas < 100: GPU will always be under-utilized.
+  - Setting replicas = 100: GPU can be at less than or equal to 100 percent of its capacity. 
+  - Setting replicas > 100: GPU can be oversubscribed  
+!Note: Pod request for limiting thread percentage to > 100 percent will fail.
 
-During resource allocation, the plugin checks whether the requested GPU ID corresponds to an MPS replicated resource,
-and if so it mounts the required volumes and sets the required environment variables to make the container use MPS,
-enforcing the memory and compute resource limits specified in the plugin configuration.
+- **vmem**: This represents GPU memory partition. Partition value signifies the partition size of memory in MB. Replica count specifies the total number of virtual memory devices to broadcast. So above configuration will broadcast 16 virtual devices each corresponding to 1 GB of memory.  
+!Note: GPU memory cannot be over-subscribed.
 
-We also changed the installation Helm chart so that MPS sharing can be enabled or disabled through the value `mps.enabled`.
-When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU
-mode to `EXCLUSIVE_PROCESS`.
+During resource allocation, the plugin checks whether the requested GPU ID corresponds to an MPS replicated resource, and if so it mounts the required volumes and sets the required environment variables to make the container use MPS, enforcing the memory and compute resource limits specified in the plugin configuration.
 
-This forked plugin is a component of [`nos`](https://github.com/nebuly-ai/nos), the open-source module to efficiently run
-AI workloads on Kubernetes, increasing GPU utilization, cutting down infrastructure costs and improving workloads performance.
+We also changed the installation Helm chart so that MPS sharing can be enabled or disabled through the value `mps.enabled`. When MPS is enabled, the Chart adds an MPS server sidecar container to the device plugin DaemonSet and sets the GPU mode to `EXCLUSIVE_PROCESS`.
 
-Currently, nos has two main features:
-
-- [Dynamic GPU partitioning](https://docs.nebuly.com/nos/dynamic-gpu-partitioning/overview): allow to schedule Pods requesting
-fractions of GPU. GPU partitioning is performed automatically in real-time based on the Pods pending and running in the cluster,
-so that Pods can request only the resources that are strictly necessary and GPUs are always fully utilized.
-- [Elastic Resource Quota management](https://docs.nebuly.com/nos/elastic-resource-quota/overview): increase the number of
-Pods running on the cluster by allowing namespaces to borrow quotas of reserved resources from other namespaces as long as they
-are not using them.
+!Note: This plugin works only for 1 GPU setup as of now. Multiple GPU device setup is under development. 
 
 ## Installation
 
