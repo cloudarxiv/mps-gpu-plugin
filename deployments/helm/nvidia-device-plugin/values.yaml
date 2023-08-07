@@ -71,10 +71,10 @@ allowDefaultNamespace: false
 
 imagePullSecrets: []
 image:
-  repository: xzaviourr/k8s-device-plugin
+  repository: synergcseiitb/k8s-mps-device-plugin
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v13"
+  tag: "v1"
 
 mps:
   enabled: true
