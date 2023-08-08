@@ -60,7 +60,16 @@ We also changed the installation Helm chart so that MPS sharing can be enabled o
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
 
 ```bash
-helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin \
+helm install https://cloudarxiv.github.io/mps-gpu-plugin/nvidia-device-plugin-0.13.0.tgz \
+  --version 0.13.0 \
+  --generate-name \
+  -n nebuly-nvidia \
+  --create-namespace
+```
+
+If you want to run the plugin from a cloned repo, you can run it as follows:
+```bash
+helm install deployments/helm/nvidia-device-plugin \
   --version 0.13.0 \
   --generate-name \
   -n nebuly-nvidia \

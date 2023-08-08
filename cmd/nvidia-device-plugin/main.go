@@ -24,11 +24,11 @@ import (
 	"syscall"
 	"time"
 
+	spec "github.com/cloudarxiv/mps-gpu-plugin/api/config/v1"
+	"github.com/cloudarxiv/mps-gpu-plugin/internal/info"
+	"github.com/cloudarxiv/mps-gpu-plugin/internal/rm"
 	"github.com/fsnotify/fsnotify"
 	cli "github.com/urfave/cli/v2"
-	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
-	"github.com/xzaviourr/k8s-device-plugin/internal/info"
-	"github.com/xzaviourr/k8s-device-plugin/internal/rm"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 

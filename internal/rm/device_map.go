@@ -20,7 +20,7 @@ package rm
 import (
 	"fmt"
 
-	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
+	spec "github.com/cloudarxiv/mps-gpu-plugin/api/config/v1"
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvlib/device"
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvml"
 )

@@ -243,6 +243,7 @@ func (rs AnnotatedIDs) GetIDs() []string {
 type MPSAnnotatedID string
 
 // Split splits a MPSAnnotatedID into its ID, its memory GB, and replica number parts.
+// Anshul - Modified configuration for the MPS devices
 func (r MPSAnnotatedID) Split() (string, int, int, string) {
 	println("MPS Annotated ID : %s", r)
 	split := strings.SplitN(string(r), "::", 4)

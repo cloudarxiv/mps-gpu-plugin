@@ -20,8 +20,8 @@ package rm
 import (
 	"testing"
 
+	spec "github.com/cloudarxiv/mps-gpu-plugin/api/config/v1"
 	"github.com/stretchr/testify/require"
-	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"
 )
 

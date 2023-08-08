@@ -25,7 +25,7 @@ import (
 
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvml"
 
-	"github.com/xzaviourr/k8s-device-plugin/internal/mig"
+	"github.com/cloudarxiv/mps-gpu-plugin/internal/mig"
 )
 
 const (

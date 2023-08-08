@@ -19,8 +19,8 @@ package main
 import (
 	"fmt"
 
-	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
-	"github.com/xzaviourr/k8s-device-plugin/internal/rm"
+	spec "github.com/cloudarxiv/mps-gpu-plugin/api/config/v1"
+	"github.com/cloudarxiv/mps-gpu-plugin/internal/rm"
 	"gitlab.com/nvidia/cloud-native/go-nvlib/pkg/nvml"
 )
 

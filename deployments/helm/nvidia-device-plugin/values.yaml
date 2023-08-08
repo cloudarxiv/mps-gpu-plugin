@@ -18,6 +18,8 @@
 #       version: v1
 #       flags:
 #         migStrategy: mixed
+
+# Anshul - Changed the configuration for the new MPS type GPU
 config:
   # ConfigMap name if pulling from an external ConfigMap
   name: ""

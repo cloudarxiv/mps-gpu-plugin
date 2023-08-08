@@ -1,4 +1,4 @@
-module github.com/xzaviourr/k8s-device-plugin
+module github.com/cloudarxiv/mps-gpu-plugin
 
 go 1.18
 

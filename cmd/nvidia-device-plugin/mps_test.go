@@ -3,10 +3,11 @@ package main
 import (
 	"testing"
 
+	"github.com/cloudarxiv/mps-gpu-plugin/internal/rm"
 	"github.com/stretchr/testify/require"
-	"github.com/xzaviourr/k8s-device-plugin/internal/rm"
 )
 
+// Anshul - Modified the test to request for vcore devices
 func TestMPSDeviceList_Subset(t *testing.T) {
 	testCases := []struct {
 		description string

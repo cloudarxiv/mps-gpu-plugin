@@ -45,7 +45,7 @@ CLI_VERSION = $(LIB_VERSION)$(if $(LIB_TAG),-$(LIB_TAG))
 else
 CLI_VERSION = $(VERSION)
 endif
-CLI_VERSION_PACKAGE = github.com/xzaviourr/k8s-device-plugin/internal/info
+CLI_VERSION_PACKAGE = https://github.com/cloudarxiv/mps-gpu-plugin/internal/info
 
 GOOS ?= linux
 
@@ -159,7 +159,7 @@ PHONY: .shell
 
 
 # Docker image names
-PLUGIN_DOCKER_IMAGE_NAME ?= k8s-device-plugin
+PLUGIN_DOCKER_IMAGE_NAME ?= k8s-mps-device-plugin
 MPS_SERVER_DOCKER_IMAGE_NAME ?= nvidia-mps-server
 
 # Helm chart URL to push Helm charts
@@ -180,6 +180,7 @@ neb-docker-build-mps-server:
 neb-docker-push-plugin:
 	sudo docker save -o k8s-mps-device-plugin:v1.tar synergcseiitb/k8s-mps-device-plugin:v1
 	sudo docker load -i k8s-mps-device-plugin:v1.tar
+	rm k8s-mps-device-plugin:v1.tar
 	sudo docker push synergcseiitb/k8s-mps-device-plugin:v1
 
 .PHONY: neb-docker-push-mps-server

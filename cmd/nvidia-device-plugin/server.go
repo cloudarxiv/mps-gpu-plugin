@@ -28,8 +28,8 @@ import (
 	"strings"
 	"time"
 
-	spec "github.com/xzaviourr/k8s-device-plugin/api/config/v1"
-	"github.com/xzaviourr/k8s-device-plugin/internal/rm"
+	spec "github.com/cloudarxiv/mps-gpu-plugin/api/config/v1"
+	"github.com/cloudarxiv/mps-gpu-plugin/internal/rm"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	pluginapi "k8s.io/kubelet/pkg/apis/deviceplugin/v1beta1"

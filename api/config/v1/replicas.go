@@ -33,6 +33,7 @@ type MPS struct {
 }
 
 // MPSResource represents a resource to be replicated (e.g. sliced) through MPS
+// Anshul - Modified resource structure to store the type of resource
 type MPSResource struct {
 	Name      ResourceName          `json:"name" yaml:"name"`
 	Rename    ResourceName          `json:"rename,omitempty" yaml:"rename,omitempty"`
@@ -276,6 +277,7 @@ func (s *ReplicatedResource) UnmarshalJSON(b []byte) error {
 }
 
 // UnmarshalJSON unmarshals raw bytes into a 'MPSResource' struct.
+// Anshul - Modified reading of json configuration
 func (s *MPSResource) UnmarshalJSON(b []byte) error {
 	rr := make(map[string]json.RawMessage)
 	err := json.Unmarshal(b, &rr)
