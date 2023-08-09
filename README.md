@@ -1,8 +1,10 @@
 # NVIDIA device plugin for Kubernetes
 
-This is a forked version of the NVIDIA device plugin for Kubernetes. We have made some changes to the original version to make it support GPU sharing through NVIDIA [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html), which allows spatial sharing of a GPU among multiple processes with memory and compute resource limits.
+This is a forked version of the [nebuly-ai](https://github.com/nebuly-ai/k8s-device-plugin) device plugin for Kubernetes, which in itself is a forked version of official [Nvidia device plugin](https://github.com/NVIDIA/k8s-device-plugin). Nebuly-ai extended the official nvidia device plugin to provide support for [Multi-Process Service (MPS)](https://docs.nvidia.com/deploy/mps/index.html) in kubernetes cluster. It allowed for partitioning the GPU memory of the MPS supported GPU in units of GB, and broadcast every entity as a individual virtual GPU with partitioned memory and full compute power.
 
-Before deploying the plugin, user needs to specify the device configurations that he needs to broadcast as helm configuration (in values.yaml file). One of the example configuration is - 
+We made changes in the nebuly-ai version of the device plugin to allow for partitioning both GPU memory and compute power as separate devices which are broadcasted in the Kubernetes cluster. It allows users to specify their exact requirements of memory and compute while submitting a pod request. 
+
+Before deploying the plugin, device configuration can be modified by modifying the helm configuration file (values.yaml file). One of the example configuration is - 
 
 ```yaml
 config:
@@ -60,14 +62,15 @@ We also changed the installation Helm chart so that MPS sharing can be enabled o
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
 
 ```bash
-helm install https://cloudarxiv.github.io/mps-gpu-plugin/nvidia-device-plugin-0.13.0.tgz \
+helm install https://github.com/cloudarxiv/mps-gpu-plugin/nvidia-device-plugin-0.13.0.tgz \
   --version 0.13.0 \
   --generate-name \
   -n nebuly-nvidia \
   --create-namespace
 ```
 
-If you want to run the plugin from a cloned repo, you can run it as follows:
+If you want to install the plugin from a cloned repo, you can directly run:
+
 ```bash
 helm install deployments/helm/nvidia-device-plugin \
   --version 0.13.0 \
@@ -79,7 +82,6 @@ helm install deployments/helm/nvidia-device-plugin \
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
 
 ### Installation alongside the NVIDIA device plugin
-
 You can choose to install this plugin alongside the original NVIDIA Device Plugin,
 but only run it on certain nodes by setting affinity or node selector rules. When you do that, it is important to ensure
 that only one of the two plugins is running on a node at a time.
