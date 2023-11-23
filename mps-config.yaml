@@ -18,8 +18,6 @@
 #       version: v1
 #       flags:
 #         migStrategy: mixed
-
-# Anshul - Changed the configuration for the new MPS type GPU
 config:
   # ConfigMap name if pulling from an external ConfigMap
   name: ""
@@ -35,21 +33,13 @@ config:
         migStrategy: none
       sharing:
         mps: 
-          failRequestsGreaterThanOne: false
+          failRequestsGreaterThanOne: true
           resources:
             - name: nvidia.com/gpu
-              rename: nvidia.com/vcore
-              partition: 1
-              replicas: 1000
+              rename: nvidia.com/gpu-2gb
+              memoryGB: 2
+              replicas: 2
               devices: ["0"]
-              rtype: vcore
-              
-            - name: nvidia.com/gpu
-              rename: nvidia.com/vmem
-              partition: 1024
-              replicas: 16
-              devices: ["0"]
-              rtype: vmem
   # Default config name within the ConfigMap
   default: ""
   # List of fallback strategies to attempt if no config is selected and no default is provided

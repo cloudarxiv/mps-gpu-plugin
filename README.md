@@ -61,7 +61,7 @@ We also changed the installation Helm chart so that MPS sharing can be enabled o
 
 You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
 
-```bash
+```bashr
 helm install https://github.com/cloudarxiv/mps-gpu-plugin/nvidia-device-plugin-0.13.0.tgz \
   --version 0.13.0 \
   --generate-name \
@@ -80,6 +80,9 @@ helm install deployments/helm/nvidia-device-plugin \
 ```
 
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
+
+Note:
+If the plugin fails to start since one of the containers in the pod is failing, issue is due to the running mps-server. This plugin starts the mps-server as a separate container, so if the mps-server is already running, ensure that it is stopped before deploying the plugin.
 
 ### Installation alongside the NVIDIA device plugin
 You can choose to install this plugin alongside the original NVIDIA Device Plugin,
