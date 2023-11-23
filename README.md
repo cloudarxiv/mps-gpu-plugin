@@ -84,6 +84,37 @@ You can find all the available configuration values [here](deployments/helm/nvid
 Note:
 If the plugin fails to start since one of the containers in the pod is failing, issue is due to the running mps-server. This plugin starts the mps-server as a separate container, so if the mps-server is already running, ensure that it is stopped before deploying the plugin.
 
+## Deploying a Pod
+Example pod request to test the plugin after deployment can be found here. This deploys an image detection workload (Resnet50) on a dataset containing 10000 images with the batch size mentioned in the request.
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: image-rec-resnet
+  labels:
+    name: image-rec-resnet
+spec:
+  hostIPC: true
+  restartPolicy: OnFailure
+  securityContext:
+    runAsUser: 1000
+  containers:
+  - name: image-rec-resnet
+    image: "synergcseiitb/image-rec-resnet:1.6"
+    env:
+      - name: batch_size
+        value: "500"
+    imagePullPolicy: Never
+    resources:
+      requests:
+        nvidia.com/vcore: 100
+        nvidia.com/vmem: 8
+      limits:
+        nvidia.com/vcore: 100
+        nvidia.com/vmem: 8
+```
+
+
 ### Installation alongside the NVIDIA device plugin
 You can choose to install this plugin alongside the original NVIDIA Device Plugin,
 but only run it on certain nodes by setting affinity or node selector rules. When you do that, it is important to ensure
