@@ -80,7 +80,10 @@ helm install deployments/helm/nvidia-device-plugin \
 
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
 
-!Note: If the plugin fails to start since one of the containers in the pod is failing, issue is due to the running mps-server. This plugin starts the mps-server as a separate container, so if the mps-server is already running, ensure that it is stopped before deploying the plugin.
+!Note: If the plugin fails to start since one of the containers in the pod is failing, issue is due to the running mps-server. This plugin starts the mps-server as a separate container, so if the mps-server is already running, ensure that it is stopped before deploying the plugin. To shut down the running mps server, you can run this command as the root user -
+```
+echo quit | nvidia-cuda-mps-control
+```
 
 !Note: Test file for creating a basic kubernetes setup and deploying the device plugin is present in the repo with the file named start_cluster.sh . To test the working of the plugin in 1 node cluster, you can run this bash file after cloning the repo in your local machine.
 
