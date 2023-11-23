@@ -58,8 +58,7 @@ We also changed the installation Helm chart so that MPS sharing can be enabled o
 !Note: This plugin works only for 1 GPU setup as of now. Multiple GPU device setup is under development. 
 
 ## Installation
-
-You can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
+Before deploying the plugin, make sure you have a working kubernetes setup. Once setup is up and running, you can install our forked version of the NVIDIA device plugin for Kubernetes through our Helm chart as follows:
 
 ```bashr
 helm install https://github.com/cloudarxiv/mps-gpu-plugin/nvidia-device-plugin-0.13.0.tgz \
@@ -69,7 +68,7 @@ helm install https://github.com/cloudarxiv/mps-gpu-plugin/nvidia-device-plugin-0
   --create-namespace
 ```
 
-If you want to install the plugin from a cloned repo, you can directly run:
+If you want to install the plugin from a cloned repo, you can directly run the command below after cloning the repo on your local machine.
 
 ```bash
 helm install deployments/helm/nvidia-device-plugin \
@@ -81,8 +80,9 @@ helm install deployments/helm/nvidia-device-plugin \
 
 You can find all the available configuration values [here](deployments/helm/nvidia-device-plugin/values.yaml).
 
-Note:
-If the plugin fails to start since one of the containers in the pod is failing, issue is due to the running mps-server. This plugin starts the mps-server as a separate container, so if the mps-server is already running, ensure that it is stopped before deploying the plugin.
+!Note: If the plugin fails to start since one of the containers in the pod is failing, issue is due to the running mps-server. This plugin starts the mps-server as a separate container, so if the mps-server is already running, ensure that it is stopped before deploying the plugin.
+
+!Note: Test file for creating a basic kubernetes setup and deploying the device plugin is present in the repo with the file named start_cluster.sh . To test the working of the plugin in 1 node cluster, you can run this bash file after cloning the repo in your local machine.
 
 ## Deploying a Pod
 Example pod request to test the plugin after deployment can be found here. This deploys an image detection workload (Resnet50) on a dataset containing 10000 images with the batch size mentioned in the request.

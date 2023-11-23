@@ -13,22 +13,9 @@ kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Doc
 kubectl taint nodes ub-10 node-role.kubernetes.io/master-   # Allow device plugins and pods to run on master
 
 kubectl label node ub-10 nos.nebuly.com/gpu-partitioning=mps
-# helm install https://cloudarxiv.github.io/mps-gpu-plugin/nvidia-device-plugin-0.13.0.tgz \
-#   --version 0.13.0 \
-#   --generate-name \
-#   -n nebuly-nvidia \
-#   --create-namespace
-
-# helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin \
-#   --version 0.13.0 \
-#   --generate-name \
-#   -n nebuly-nvidia \
-#   --create-namespace
 
 helm install deployments/helm/nvidia-device-plugin \
   --version 0.13.0 \
   --generate-name \
   -n nebuly-nvidia \
   --create-namespace
-
-# helm install oci://ghcr.io/nebuly-ai/helm-charts/nvidia-device-plugin --version 0.13.0 --generate-name -n nebuly-nvidia --create-namespace --values mps-config.yaml
